@@ -219,6 +219,7 @@ dashboard/ (or access/)
 ## Naming Conventions
 
 ### Files and Directories
+
 - **Directories**: lowercase with hyphens (`stream-management/`)
 - **React Components**: PascalCase (`StreamEventForm.jsx`)
 - **JavaScript files**: camelCase (`authService.js`)
@@ -226,6 +227,7 @@ dashboard/ (or access/)
 - **Test files**: `*.test.js` or `*.spec.js`
 
 ### Code Conventions
+
 - **Variables**: camelCase (`streamEvent`, `attendeeCount`)
 - **Constants**: UPPER_SNAKE_CASE (`API_BASE_URL`, `JWT_EXPIRY`)
 - **Functions**: camelCase (`createStreamEvent`, `validateInput`)
@@ -233,6 +235,7 @@ dashboard/ (or access/)
 - **Database fields**: camelCase (`createdAt`, `isActive`)
 
 ### API Conventions
+
 - **Endpoints**: kebab-case (`/api/units/:unitId/streams`, `/api/units/:unitId/attendance`)
 - **Query parameters**: camelCase (`?startDate=2024-01-01&unitId=123`)
 - **JSON fields**: camelCase (`{ "streamUrl": "...", "attendeeCount": 5 }`)
@@ -240,6 +243,7 @@ dashboard/ (or access/)
 ## Import Patterns
 
 ### Backend (Node.js)
+
 ```javascript
 // External dependencies first
 const express = require('express');
@@ -254,6 +258,7 @@ const youtubeService = require('../services/youtubeService');
 ```
 
 ### Frontend (React)
+
 ```javascript
 // React and external libraries first
 import React, { useState, useEffect } from 'react';
@@ -271,6 +276,7 @@ import { formatDate } from '../utils/dateHelpers';
 ## Environment Configuration
 
 ### API Environment Variables
+
 ```bash
 # API (.env.development)
 NODE_ENV=development
@@ -286,6 +292,7 @@ CORS_ORIGINS=https://dashboard.ldschurch.stream,https://api.ldschurch.stream
 ```
 
 ### Frontend Runtime Configuration
+
 Frontend applications load configuration at runtime from `/config.json`:
 
 ```json
@@ -317,6 +324,7 @@ Frontend applications load configuration at runtime from `/config.json`:
 ## Docker Configuration
 
 ### Multi-stage Dockerfile Pattern
+
 ```dockerfile
 # Frontend Dockerfile template
 FROM node:18-alpine AS builder
@@ -334,6 +342,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### Backend Dockerfile Pattern
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -347,6 +356,7 @@ CMD ["node", "src/app.js"]
 ## Testing Structure
 
 ### Backend Testing
+
 ```
 api/tests/
 ├── unit/                      # Unit tests
@@ -364,6 +374,7 @@ api/tests/
 ```
 
 ### Frontend Testing
+
 ```
 dashboard/src/tests/
 ├── components/               # Component tests
@@ -380,33 +391,37 @@ dashboard/src/tests/
 ## Database Schema Patterns
 
 ### Model Definition Pattern
+
 ```javascript
 // models/StreamEvent.js
 const mongoose = require('mongoose');
 
-const streamEventSchema = new mongoose.Schema({
-  unitId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Unit',
-    required: true,
-    index: true
+const streamEventSchema = new mongoose.Schema(
+  {
+    unitId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Unit',
+      required: true,
+      index: true,
+    },
+    scheduledDate: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ['scheduled', 'live', 'completed', 'cancelled'],
+      default: 'scheduled',
+      index: true,
+    },
   },
-  scheduledDate: {
-    type: Date,
-    required: true,
-    index: true
-  },
-  status: {
-    type: String,
-    enum: ['scheduled', 'live', 'completed', 'cancelled'],
-    default: 'scheduled',
-    index: true
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
-});
+);
 
 // Compound indexes for common queries
 streamEventSchema.index({ unitId: 1, scheduledDate: -1 });
@@ -418,6 +433,7 @@ module.exports = mongoose.model('StreamEvent', streamEventSchema);
 ## Error Handling Patterns
 
 ### API Error Response Format
+
 ```javascript
 // Standardized error response
 {
@@ -434,20 +450,21 @@ module.exports = mongoose.model('StreamEvent', streamEventSchema);
 ```
 
 ### Frontend Error Handling
+
 ```javascript
 // services/api.js
-const handleApiError = (error) => {
+const handleApiError = error => {
   if (error.response?.data?.error) {
     return {
       code: error.response.data.error.code,
       message: error.response.data.error.message,
-      status: error.response.status
+      status: error.response.status,
     };
   }
   return {
     code: 'NETWORK_ERROR',
     message: 'Unable to connect to server',
-    status: 0
+    status: 0,
   };
 };
 ```
@@ -455,6 +472,7 @@ const handleApiError = (error) => {
 ## State Management Patterns
 
 ### React Context Pattern
+
 ```javascript
 // context/AuthContext.jsx
 const AuthContext = createContext();
@@ -463,7 +481,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const login = async (credentials) => {
+  const login = async credentials => {
     // Authentication logic
   };
 
@@ -472,9 +490,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>{children}</AuthContext.Provider>
   );
 };
 
@@ -488,6 +504,7 @@ export const useAuth = () => {
 ```
 
 ### Runtime Configuration Pattern
+
 ```javascript
 // context/ConfigContext.jsx
 const ConfigContext = createContext();
@@ -509,9 +526,7 @@ export const ConfigProvider = ({ children }) => {
   }, []);
 
   return (
-    <ConfigContext.Provider value={{ config, loading, error }}>
-      {children}
-    </ConfigContext.Provider>
+    <ConfigContext.Provider value={{ config, loading, error }}>{children}</ConfigContext.Provider>
   );
 };
 
@@ -527,25 +542,26 @@ export const useConfig = () => {
 ## Subdomain Routing Logic
 
 ### Unit Subdomain Resolution
+
 The access app extracts the unit subdomain from the hostname and maps it to database records:
 
 ```javascript
 // utils/subdomainHelper.js
 export const extractSubdomain = () => {
   const hostname = window.location.hostname;
-  
+
   // Extract subdomain from hostname
   // blacksburg-va.ldschurch.stream → blacksburg-va
   // localhost/traefik.me → handle dev cases
   if (hostname.includes('.ldschurch.stream')) {
     return hostname.split('.ldschurch.stream')[0];
   }
-  
+
   // Development: blacksburg-va.traefik.me → blacksburg-va
   if (hostname.includes('.traefik.me')) {
     return hostname.split('.traefik.me')[0];
   }
-  
+
   return null;
 };
 
@@ -554,16 +570,16 @@ export const useUnit = () => {
   const [unit, setUnit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     const subdomain = extractSubdomain();
-    
+
     if (!subdomain) {
       setError('Invalid subdomain');
       setLoading(false);
       return;
     }
-    
+
     // API call to resolve unit
     fetch(`/api/public/${subdomain}/unit-info`)
       .then(res => {
@@ -574,12 +590,13 @@ export const useUnit = () => {
       .catch(setError)
       .finally(() => setLoading(false));
   }, []);
-  
+
   return { unit, loading, error };
 };
 ```
 
 ### API Endpoint Pattern
+
 ```javascript
 // Subdomain-based routing (Option A)
 GET /api/public/:subdomain/current-stream
@@ -592,17 +609,18 @@ POST /api/public/:subdomain/attend
 ```
 
 ### Error Handling for Invalid Units
+
 ```javascript
 // pages/StreamAccess.jsx
 const StreamAccess = () => {
   const { unit, loading, error } = useUnit();
-  
+
   if (loading) return <LoadingSpinner />;
-  
+
   if (error || !unit) {
     return <UnitNotFoundPage subdomain={extractSubdomain()} />;
   }
-  
+
   return <AttendanceForm unit={unit} />;
 };
 
@@ -612,17 +630,16 @@ const UnitNotFoundPage = ({ subdomain }) => (
     <h1>🏰 Unit Not Found</h1>
     <p>Sorry, we couldn't find a unit with the name "{subdomain}".</p>
     <p>Double-check the URL or contact your local leadership.</p>
-    <small className="text-muted">
-      Looking for help? Email support@ldschurch.stream
-    </small>
+    <small className="text-muted">Looking for help? Email support@ldschurch.stream</small>
   </div>
 );
 ```
 
 ### Subdomain Validation Rules
+
 ```javascript
 // utils/validation.js
-export const isValidSubdomain = (subdomain) => {
+export const isValidSubdomain = subdomain => {
   // Format: lowercase letters, numbers, hyphens
   // Examples: blacksburg-va, provo-ut, ward-123
   const pattern = /^[a-z0-9-]+$/;
@@ -631,6 +648,7 @@ export const isValidSubdomain = (subdomain) => {
 ```
 
 ### Database Unit Model
+
 ```javascript
 // models/Unit.js - subdomain field
 const unitSchema = new mongoose.Schema({
@@ -643,8 +661,8 @@ const unitSchema = new mongoose.Schema({
     match: /^[a-z0-9-]+$/,
     minlength: 3,
     maxlength: 50,
-    index: true // Fast subdomain lookups
-  }
+    index: true, // Fast subdomain lookups
+  },
   // ... other fields
 });
 ```
@@ -652,6 +670,7 @@ const unitSchema = new mongoose.Schema({
 ## Database Migration Patterns
 
 ### Migration Structure
+
 ```
 api/src/migrations/
 ├── index.js                    # Migration runner
@@ -662,6 +681,7 @@ api/src/migrations/
 ```
 
 ### Migration Runner
+
 ```javascript
 // migrations/index.js
 const fs = require('fs');
@@ -687,7 +707,8 @@ class MigrationRunner {
   }
 
   async runPending() {
-    const files = fs.readdirSync(__dirname)
+    const files = fs
+      .readdirSync(__dirname)
       .filter(f => f.match(/^\d{3}-.*\.js$/))
       .sort();
 
@@ -708,41 +729,36 @@ module.exports = { MigrationRunner };
 ```
 
 ### Migration Template
+
 ```javascript
 // migrations/002-add-subdomain-field.js
 module.exports = {
   async up() {
     const db = mongoose.connection.db;
-    
+
     // Add subdomain field to existing units
-    await db.collection('units').updateMany(
-      { subdomain: { $exists: false } },
-      { $set: { subdomain: null } }
-    );
-    
+    await db
+      .collection('units')
+      .updateMany({ subdomain: { $exists: false } }, { $set: { subdomain: null } });
+
     // Create unique index on subdomain
-    await db.collection('units').createIndex(
-      { subdomain: 1 }, 
-      { unique: true, sparse: true }
-    );
+    await db.collection('units').createIndex({ subdomain: 1 }, { unique: true, sparse: true });
   },
 
   async down() {
     const db = mongoose.connection.db;
-    
+
     // Remove subdomain field
-    await db.collection('units').updateMany(
-      {},
-      { $unset: { subdomain: "" } }
-    );
-    
+    await db.collection('units').updateMany({}, { $unset: { subdomain: '' } });
+
     // Drop index
     await db.collection('units').dropIndex({ subdomain: 1 });
-  }
+  },
 };
 ```
 
 ### Application Startup Integration
+
 ```javascript
 // src/app.js
 const { MigrationRunner } = require('./migrations');
@@ -750,17 +766,18 @@ const { MigrationRunner } = require('./migrations');
 async function startApp() {
   // Connect to database
   await mongoose.connect(config.database.url);
-  
+
   // Run pending migrations
   const migrationRunner = new MigrationRunner();
   await migrationRunner.runPending();
-  
+
   // Start Express server
   app.listen(config.server.port);
 }
 ```
 
 ### Migration Commands
+
 ```json
 // package.json
 {
@@ -772,6 +789,7 @@ async function startApp() {
 ```
 
 ### Migration Creation Script
+
 ```javascript
 // scripts/create-migration.js
 const fs = require('fs');
@@ -810,6 +828,7 @@ console.log(`Created migration: ${filename}`);
 ## Scheduled Tasks Structure
 
 ### Cron Job Organization
+
 ```
 api/src/jobs/
 ├── index.js                   # Job scheduler setup
@@ -820,6 +839,7 @@ api/src/jobs/
 ```
 
 ### Job Scheduler Setup
+
 ```javascript
 // jobs/index.js
 const cron = require('node-cron');
@@ -837,26 +857,30 @@ class JobScheduler {
   start() {
     // Monday morning reports (6 AM)
     this.schedule('reports', SCHEDULES.WEEKLY_REPORTS, reportGenerator.run);
-    
+
     // YouTube cleanup (7 AM Monday)
     this.schedule('cleanup', SCHEDULES.YOUTUBE_CLEANUP, youtubeCleanup.run);
-    
+
     // Health check (every 5 minutes)
     this.schedule('health', SCHEDULES.HEALTH_CHECK, healthCheck.run);
-    
+
     logger.info('Job scheduler started');
   }
 
   schedule(name, cronExpression, task) {
-    const job = cron.schedule(cronExpression, async () => {
-      logger.info(`Starting job: ${name}`);
-      try {
-        await task();
-        logger.info(`Completed job: ${name}`);
-      } catch (error) {
-        logger.error(`Job failed: ${name}`, { error: error.message });
-      }
-    }, { scheduled: false });
+    const job = cron.schedule(
+      cronExpression,
+      async () => {
+        logger.info(`Starting job: ${name}`);
+        try {
+          await task();
+          logger.info(`Completed job: ${name}`);
+        } catch (error) {
+          logger.error(`Job failed: ${name}`, { error: error.message });
+        }
+      },
+      { scheduled: false }
+    );
 
     this.jobs.set(name, job);
     job.start();
@@ -874,26 +898,28 @@ module.exports = { JobScheduler };
 ```
 
 ### Schedule Definitions
+
 ```javascript
 // jobs/schedules.js
 module.exports = {
   SCHEDULES: {
     // Monday 6 AM (reports sent before leadership meetings)
     WEEKLY_REPORTS: '0 6 * * 1',
-    
+
     // Monday 7 AM (cleanup after reports are sent)
     YOUTUBE_CLEANUP: '0 7 * * 1',
-    
+
     // Every 5 minutes (system health)
     HEALTH_CHECK: '*/5 * * * *',
-    
+
     // Daily at midnight (general maintenance)
-    DAILY_MAINTENANCE: '0 0 * * *'
-  }
+    DAILY_MAINTENANCE: '0 0 * * *',
+  },
 };
 ```
 
 ### Report Generation Job
+
 ```javascript
 // jobs/reportGenerator.js
 const StreamEvent = require('../models/StreamEvent');
@@ -905,70 +931,70 @@ const logger = require('../utils/logger');
 class ReportGenerator {
   async run() {
     logger.info('Starting weekly report generation');
-    
+
     // Find all completed streams from previous day (Sunday)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
-    
+
     const endOfYesterday = new Date(yesterday);
     endOfYesterday.setHours(23, 59, 59, 999);
-    
+
     const completedStreams = await StreamEvent.find({
       status: 'completed',
       scheduledDate: {
         $gte: yesterday,
-        $lte: endOfYesterday
-      }
+        $lte: endOfYesterday,
+      },
     }).populate('unitId');
-    
+
     for (const stream of completedStreams) {
       await this.generateUnitReport(stream);
     }
-    
+
     logger.info(`Generated reports for ${completedStreams.length} units`);
   }
-  
+
   async generateUnitReport(streamEvent) {
     const unit = streamEvent.unitId;
-    
+
     if (!unit.leadershipEmails || unit.leadershipEmails.length === 0) {
       logger.warn(`No leadership emails configured for unit: ${unit.name}`);
       return;
     }
-    
+
     // Get attendance for this stream
     const attendance = await AttendanceRecord.find({
-      streamEventId: streamEvent._id
+      streamEventId: streamEvent._id,
     }).sort({ attendeeName: 1 });
-    
+
     // Generate attendance analysis
     const report = await this.buildAttendanceReport(unit, streamEvent, attendance);
-    
+
     // Send email to leadership
     await emailService.sendAttendanceReport(unit.leadershipEmails, report);
-    
+
     logger.info(`Sent report for ${unit.name} to ${unit.leadershipEmails.length} recipients`);
   }
-  
+
   async buildAttendanceReport(unit, streamEvent, attendance) {
     // Get historical data for pattern analysis
     const fourWeeksAgo = new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-    
+
     const recentStreams = await StreamEvent.find({
       unitId: unit._id,
       status: 'completed',
-      scheduledDate: { $gte: fourWeeksAgo }
+      scheduledDate: { $gte: fourWeeksAgo },
     });
-    
+
     const recentAttendance = await AttendanceRecord.find({
-      streamEventId: { $in: recentStreams.map(s => s._id) }
+      streamEventId: { $in: recentStreams.map(s => s._id) },
     });
-    
+
     // Analyze attendance patterns
     const analysis = this.analyzeAttendancePatterns(attendance, recentAttendance);
-    
+
     return {
       unit: unit.name,
       streamDate: streamEvent.scheduledDate,
@@ -976,12 +1002,12 @@ class ReportGenerator {
       uniqueNames: attendance.length,
       attendeeList: attendance.map(record => ({
         name: record.attendeeName,
-        count: record.attendeeCount
+        count: record.attendeeCount,
       })),
-      analysis
+      analysis,
     };
   }
-  
+
   analyzeAttendancePatterns(currentAttendance, historicalAttendance) {
     // Implementation for pattern analysis
     // - New attendees
@@ -992,7 +1018,7 @@ class ReportGenerator {
       newThisWeek: [],
       regularStreamers: [],
       missingRegulars: [],
-      returnedAfterAbsence: []
+      returnedAfterAbsence: [],
     };
   }
 }
@@ -1001,6 +1027,7 @@ module.exports = new ReportGenerator();
 ```
 
 ### YouTube Cleanup Job
+
 ```javascript
 // jobs/youtubeCleanup.js
 const StreamEvent = require('../models/StreamEvent');
@@ -1010,39 +1037,39 @@ const logger = require('../utils/logger');
 class YouTubeCleanup {
   async run() {
     logger.info('Starting YouTube cleanup job');
-    
+
     // Find streams completed more than 24 hours ago
     const cutoffTime = new Date();
     cutoffTime.setHours(cutoffTime.getHours() - 24);
-    
+
     const streamsToCleanup = await StreamEvent.find({
       status: 'completed',
       updatedAt: { $lt: cutoffTime },
-      youtubeEventId: { $exists: true, $ne: null }
+      youtubeEventId: { $exists: true, $ne: null },
     });
-    
+
     for (const stream of streamsToCleanup) {
       await this.cleanupStream(stream);
     }
-    
+
     logger.info(`Cleaned up ${streamsToCleanup.length} YouTube streams`);
   }
-  
+
   async cleanupStream(streamEvent) {
     try {
       // Delete YouTube Live event and recording
       await youtubeService.deleteEvent(streamEvent.youtubeEventId);
-      
+
       // Clear YouTube data from database record
       streamEvent.youtubeEventId = null;
       streamEvent.youtubeStreamUrl = null;
       await streamEvent.save();
-      
+
       logger.info(`Cleaned up YouTube event for stream: ${streamEvent._id}`);
     } catch (error) {
       logger.error(`Failed to cleanup YouTube event: ${streamEvent.youtubeEventId}`, {
         error: error.message,
-        streamId: streamEvent._id
+        streamId: streamEvent._id,
       });
     }
   }
@@ -1052,30 +1079,32 @@ module.exports = new YouTubeCleanup();
 ```
 
 ### Application Integration
+
 ```javascript
 // src/app.js
 const { JobScheduler } = require('./jobs');
 
 async function startApp() {
   // ... database connection and migrations
-  
+
   // Start scheduled jobs
   const jobScheduler = new JobScheduler();
   jobScheduler.start();
-  
+
   // Graceful shutdown
   process.on('SIGTERM', () => {
     logger.info('Received SIGTERM, shutting down gracefully');
     jobScheduler.stop();
     process.exit(0);
   });
-  
+
   // Start Express server
   app.listen(config.server.port);
 }
 ```
 
 ### Environment Configuration
+
 ```bash
 # Cron job settings
 REPORT_CRON_SCHEDULE=0 6 * * 1  # Monday 6 AM
@@ -1087,6 +1116,7 @@ ENABLE_CRON_JOBS=true  # Disable in development if needed
 ## Observability & Monitoring
 
 ### OpenTelemetry Integration
+
 - **Framework**: OpenTelemetry Node.js SDK
 - **Metrics**: Prometheus-compatible metrics export
 - **Tracing**: Distributed tracing for API requests
@@ -1095,50 +1125,53 @@ ENABLE_CRON_JOBS=true  # Disable in development if needed
 ### Key Metrics
 
 #### Business Metrics
+
 ```javascript
 // Stream management metrics
-stream_events_created_total // Counter: successful stream creations
-stream_events_failed_total // Counter: failed stream creations
-stream_events_cancelled_total // Counter: cancelled streams
-stream_events_active_gauge // Gauge: currently active streams
+stream_events_created_total; // Counter: successful stream creations
+stream_events_failed_total; // Counter: failed stream creations
+stream_events_cancelled_total; // Counter: cancelled streams
+stream_events_active_gauge; // Gauge: currently active streams
 
 // Attendance metrics
-attendance_submissions_total // Counter: attendance form submissions
-attendance_submissions_failed_total // Counter: failed submissions
-attendance_unique_names_gauge // Gauge: unique attendees per unit
-attendance_total_count_gauge // Gauge: total attendance count per unit
+attendance_submissions_total; // Counter: attendance form submissions
+attendance_submissions_failed_total; // Counter: failed submissions
+attendance_unique_names_gauge; // Gauge: unique attendees per unit
+attendance_total_count_gauge; // Gauge: total attendance count per unit
 
 // User activity metrics
-user_logins_total // Counter: successful specialist logins
-user_login_failures_total // Counter: failed login attempts
-invite_tokens_created_total // Counter: invite tokens generated
-invite_tokens_used_total // Counter: invite tokens redeemed
+user_logins_total; // Counter: successful specialist logins
+user_login_failures_total; // Counter: failed login attempts
+invite_tokens_created_total; // Counter: invite tokens generated
+invite_tokens_used_total; // Counter: invite tokens redeemed
 ```
 
 #### Technical Metrics
+
 ```javascript
 // API performance
-http_requests_total // Counter: HTTP requests by method, route, status
-http_request_duration_seconds // Histogram: request latency
-http_requests_in_flight // Gauge: concurrent requests
+http_requests_total; // Counter: HTTP requests by method, route, status
+http_request_duration_seconds; // Histogram: request latency
+http_requests_in_flight; // Gauge: concurrent requests
 
 // Database metrics
-mongodb_operations_total // Counter: DB operations by type
-mongodb_operation_duration_seconds // Histogram: DB operation latency
-mongodb_connections_active // Gauge: active DB connections
+mongodb_operations_total; // Counter: DB operations by type
+mongodb_operation_duration_seconds; // Histogram: DB operation latency
+mongodb_connections_active; // Gauge: active DB connections
 
 // YouTube API metrics
-youtube_api_requests_total // Counter: YouTube API calls by endpoint
-youtube_api_errors_total // Counter: YouTube API errors by type
-youtube_api_quota_remaining // Gauge: remaining API quota
+youtube_api_requests_total; // Counter: YouTube API calls by endpoint
+youtube_api_errors_total; // Counter: YouTube API errors by type
+youtube_api_quota_remaining; // Gauge: remaining API quota
 
 // Email system metrics
-emails_sent_total // Counter: emails sent successfully
-emails_failed_total // Counter: failed email deliveries
-email_queue_size // Gauge: pending emails in queue
+emails_sent_total; // Counter: emails sent successfully
+emails_failed_total; // Counter: failed email deliveries
+email_queue_size; // Gauge: pending emails in queue
 ```
 
 ### Instrumentation Setup
+
 ```javascript
 // instrumentation.js
 const { NodeSDK } = require('@opentelemetry/sdk-node');
@@ -1161,6 +1194,7 @@ sdk.start();
 ```
 
 ### Custom Metrics Implementation
+
 ```javascript
 // metrics/index.js
 const { metrics } = require('@opentelemetry/api');
@@ -1169,15 +1203,15 @@ const meter = metrics.getMeter('ldschurch-stream', '1.0.0');
 
 // Business metrics
 const streamEventsCreated = meter.createCounter('stream_events_created_total', {
-  description: 'Total number of stream events created'
+  description: 'Total number of stream events created',
 });
 
 const attendanceSubmissions = meter.createCounter('attendance_submissions_total', {
-  description: 'Total attendance form submissions'
+  description: 'Total attendance form submissions',
 });
 
 const activeStreams = meter.createUpDownCounter('stream_events_active_gauge', {
-  description: 'Currently active stream events'
+  description: 'Currently active stream events',
 });
 
 // Usage in application code
@@ -1197,6 +1231,7 @@ const recordAttendanceSubmission = (unitId, attendeeCount) => {
 ```
 
 ### Alerting Rules
+
 ```yaml
 # alerts.yml
 groups:
@@ -1206,27 +1241,28 @@ groups:
         expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
         for: 2m
         annotations:
-          summary: "High error rate detected"
-          
+          summary: 'High error rate detected'
+
       - alert: StreamCreationFailures
         expr: rate(stream_events_failed_total[10m]) > 0
         for: 1m
         annotations:
-          summary: "Stream creation failures detected"
-          
+          summary: 'Stream creation failures detected'
+
       - alert: YouTubeAPIQuotaLow
         expr: youtube_api_quota_remaining < 1000
         annotations:
-          summary: "YouTube API quota running low"
-          
+          summary: 'YouTube API quota running low'
+
       - alert: DatabaseConnectionIssues
         expr: mongodb_connections_active == 0
         for: 30s
         annotations:
-          summary: "No active database connections"
+          summary: 'No active database connections'
 ```
 
 ### Dashboard Configuration
+
 ```json
 {
   "dashboard": {
@@ -1234,17 +1270,11 @@ groups:
     "panels": [
       {
         "title": "Stream Events",
-        "metrics": [
-          "rate(stream_events_created_total[5m])",
-          "stream_events_active_gauge"
-        ]
+        "metrics": ["rate(stream_events_created_total[5m])", "stream_events_active_gauge"]
       },
       {
         "title": "Attendance Submissions",
-        "metrics": [
-          "rate(attendance_submissions_total[5m])",
-          "attendance_unique_names_gauge"
-        ]
+        "metrics": ["rate(attendance_submissions_total[5m])", "attendance_unique_names_gauge"]
       },
       {
         "title": "API Performance",
@@ -1255,10 +1285,7 @@ groups:
       },
       {
         "title": "YouTube API Usage",
-        "metrics": [
-          "rate(youtube_api_requests_total[5m])",
-          "youtube_api_quota_remaining"
-        ]
+        "metrics": ["rate(youtube_api_requests_total[5m])", "youtube_api_quota_remaining"]
       }
     ]
   }
@@ -1268,21 +1295,23 @@ groups:
 ## Testing Strategy
 
 ### Honeycomb Testing Methodology
+
 Following Spotify's approach with emphasis on integration tests, minimal E2E, and targeted unit tests:
 
 ```
      /\
     /  \     Few E2E tests (critical user journeys)
    /____\
-  /      \   
+  /      \
  /        \   Many integration tests (API endpoints, services)
-/__________\  
+/__________\
             \  Some unit tests (complex logic, edge cases)
 ```
 
 ### Testing Structure
 
 #### Backend Testing
+
 ```
 api/tests/
 ├── integration/              # Primary test layer
@@ -1320,6 +1349,7 @@ api/tests/
 ```
 
 ### Testcontainers Setup
+
 ```javascript
 // tests/integration/setup/testcontainers.js
 const { GenericContainer, Wait } = require('testcontainers');
@@ -1335,7 +1365,7 @@ class TestEnvironment {
     const mongoContainer = await new GenericContainer('mongo:7')
       .withEnvironment({
         MONGO_INITDB_ROOT_USERNAME: 'testuser',
-        MONGO_INITDB_ROOT_PASSWORD: 'testpass'
+        MONGO_INITDB_ROOT_PASSWORD: 'testpass',
       })
       .withExposedPorts(27017)
       .withWaitStrategy(Wait.forLogMessage('Waiting for connections'))
@@ -1359,17 +1389,17 @@ class TestEnvironment {
       mongoUrl,
       smtpHost: mailhogContainer.getHost(),
       smtpPort: mailhogContainer.getMappedPort(1025),
-      mailhogApi: `http://${mailhogContainer.getHost()}:${mailhogContainer.getMappedPort(8025)}`
+      mailhogApi: `http://${mailhogContainer.getHost()}:${mailhogContainer.getMappedPort(8025)}`,
     };
   }
 
   async teardown() {
     await mongoose.disconnect();
-    
+
     for (const container of this.containers.values()) {
       await container.stop();
     }
-    
+
     this.containers.clear();
   }
 }
@@ -1378,6 +1408,7 @@ module.exports = { TestEnvironment };
 ```
 
 ### Test Data Factories
+
 ```javascript
 // tests/integration/setup/fixtures.js
 const { faker } = require('@faker-js/faker');
@@ -1389,7 +1420,7 @@ class TestDataFactory {
       subdomain: faker.internet.domainWord(),
       leadershipEmails: [faker.internet.email()],
       isActive: true,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -1400,7 +1431,7 @@ class TestDataFactory {
       hashedPassword: '$2b$12$test.hash.here',
       role: 'specialist',
       isActive: true,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -1411,7 +1442,7 @@ class TestDataFactory {
       scheduledTime: '10:00 AM',
       status: 'scheduled',
       isSpecialEvent: false,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -1422,7 +1453,7 @@ class TestDataFactory {
       attendeeCount: faker.number.int({ min: 1, max: 6 }),
       submittedAt: new Date(),
       ipAddress: faker.internet.ip(),
-      ...overrides
+      ...overrides,
     };
   }
 }
@@ -1431,6 +1462,7 @@ module.exports = { TestDataFactory };
 ```
 
 ### Integration Test Example
+
 ```javascript
 // tests/integration/streams.test.js
 const request = require('supertest');
@@ -1450,25 +1482,27 @@ describe('Stream Management Integration Tests', () => {
   beforeAll(async () => {
     testEnv = new TestEnvironment();
     const config = await testEnv.setup();
-    
+
     // Create app with test configuration
     app = createApp({
       ...config,
       youtube: { mock: true }, // Use mocked YouTube service
-      email: { mock: true }    // Use mocked email service
+      email: { mock: true }, // Use mocked email service
     });
 
     // Create test data
     testUnit = await Unit.create(TestDataFactory.createUnit());
-    testUser = await User.create(TestDataFactory.createUser({ 
-      units: [testUnit._id] 
-    }));
+    testUser = await User.create(
+      TestDataFactory.createUser({
+        units: [testUnit._id],
+      })
+    );
 
     // Get auth token
     const loginResponse = await request(app)
       .post('/api/auth/login')
       .send({ email: testUser.email, password: 'testpassword' });
-    
+
     authToken = loginResponse.body.accessToken;
   });
 
@@ -1485,7 +1519,7 @@ describe('Stream Management Integration Tests', () => {
     it('should create a new stream event', async () => {
       const streamData = {
         scheduledDate: '2024-01-07',
-        scheduledTime: '10:00 AM'
+        scheduledTime: '10:00 AM',
       };
 
       const response = await request(app)
@@ -1500,7 +1534,7 @@ describe('Stream Management Integration Tests', () => {
         scheduledTime: '10:00 AM',
         status: 'scheduled',
         youtubeEventId: expect.any(String), // Mocked YouTube response
-        streamKey: expect.any(String)
+        streamKey: expect.any(String),
       });
     });
 
@@ -1509,7 +1543,7 @@ describe('Stream Management Integration Tests', () => {
       const streamData = {
         scheduledDate: '2024-01-07',
         scheduledTime: '10:00 AM',
-        _mockYouTubeFailure: true
+        _mockYouTubeFailure: true,
       };
 
       const response = await request(app)
@@ -1526,8 +1560,8 @@ describe('Stream Management Integration Tests', () => {
     it('should return streams for the unit', async () => {
       // Create test streams
       const stream1 = TestDataFactory.createStreamEvent(testUnit._id);
-      const stream2 = TestDataFactory.createStreamEvent(testUnit._id, { 
-        status: 'completed' 
+      const stream2 = TestDataFactory.createStreamEvent(testUnit._id, {
+        status: 'completed',
       });
 
       await StreamEvent.create([stream1, stream2]);
@@ -1540,7 +1574,7 @@ describe('Stream Management Integration Tests', () => {
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toMatchObject({
         unitId: testUnit._id.toString(),
-        status: expect.any(String)
+        status: expect.any(String),
       });
     });
   });
@@ -1548,6 +1582,7 @@ describe('Stream Management Integration Tests', () => {
 ```
 
 ### Service Mocks
+
 ```javascript
 // tests/mocks/youtube.js
 class MockYouTubeService {
@@ -1568,9 +1603,9 @@ class MockYouTubeService {
       status: { lifeCycleStatus: 'created' },
       cdn: {
         ingestionInfo: {
-          streamName: `mock-stream-key-${eventId}`
-        }
-      }
+          streamName: `mock-stream-key-${eventId}`,
+        },
+      },
     };
 
     this.events.set(eventId, event);
@@ -1581,7 +1616,7 @@ class MockYouTubeService {
     if (this.shouldFail) {
       throw new Error('YouTube API error');
     }
-    
+
     this.events.delete(eventId);
   }
 
@@ -1604,6 +1639,7 @@ module.exports = { MockYouTubeService };
 ```
 
 ### Unit Test Example
+
 ```javascript
 // tests/unit/services/reportService.test.js
 const { ReportService } = require('../../../src/services/reportService');
@@ -1620,15 +1656,13 @@ describe('ReportService', () => {
     it('should identify new attendees', () => {
       const currentAttendance = [
         { attendeeName: 'John Doe', attendeeCount: 2 },
-        { attendeeName: 'Jane Smith', attendeeCount: 1 }
+        { attendeeName: 'Jane Smith', attendeeCount: 1 },
       ];
 
-      const historicalAttendance = [
-        { attendeeName: 'John Doe', attendeeCount: 2 }
-      ];
+      const historicalAttendance = [{ attendeeName: 'John Doe', attendeeCount: 2 }];
 
       const analysis = reportService.analyzeAttendancePatterns(
-        currentAttendance, 
+        currentAttendance,
         historicalAttendance
       );
 
@@ -1637,16 +1671,16 @@ describe('ReportService', () => {
     });
 
     it('should identify regular streamers', () => {
-      const currentAttendance = [
-        { attendeeName: 'Regular Attendee', attendeeCount: 1 }
-      ];
+      const currentAttendance = [{ attendeeName: 'Regular Attendee', attendeeCount: 1 }];
 
       // Mock 4 weeks of attendance
-      const historicalAttendance = Array(12).fill(null).map(() => ({
-        attendeeName: 'Regular Attendee',
-        attendeeCount: 1,
-        submittedAt: new Date()
-      }));
+      const historicalAttendance = Array(12)
+        .fill(null)
+        .map(() => ({
+          attendeeName: 'Regular Attendee',
+          attendeeCount: 1,
+          submittedAt: new Date(),
+        }));
 
       const analysis = reportService.analyzeAttendancePatterns(
         currentAttendance,
@@ -1660,6 +1694,7 @@ describe('ReportService', () => {
 ```
 
 ### Test Configuration
+
 ```json
 // package.json test scripts
 {
@@ -1675,16 +1710,13 @@ describe('ReportService', () => {
     "testEnvironment": "node",
     "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
     "testMatch": ["**/*.test.js"],
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/migrations/**",
-      "!src/jobs/**"
-    ]
+    "collectCoverageFrom": ["src/**/*.js", "!src/migrations/**", "!src/jobs/**"]
   }
 }
 ```
 
 ### Global Test Setup
+
 ```javascript
 // tests/setup.js
 const { TestDataFactory } = require('./integration/setup/fixtures');
@@ -1702,13 +1734,12 @@ jest.mock('../src/services/youtubeService', () => {
 });
 ```
 
-
-
 ## Development Tooling
 
 ### Code Formatting & Linting
 
 #### Prettier Configuration
+
 ```json
 // .prettierrc (root level - shared across all services)
 {
@@ -1737,6 +1768,7 @@ package-lock.json
 #### ESLint Configuration
 
 ##### API ESLint Config
+
 ```json
 // api/.eslintrc.json
 {
@@ -1745,9 +1777,7 @@ package-lock.json
     "es2022": true,
     "jest": true
   },
-  "extends": [
-    "eslint:recommended"
-  ],
+  "extends": ["eslint:recommended"],
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module"
@@ -1758,15 +1788,12 @@ package-lock.json
     "prefer-const": "error",
     "no-var": "error"
   },
-  "ignorePatterns": [
-    "node_modules/",
-    "coverage/",
-    "dist/"
-  ]
+  "ignorePatterns": ["node_modules/", "coverage/", "dist/"]
 }
 ```
 
 ##### Frontend ESLint Config
+
 ```json
 // dashboard/.eslintrc.json (same for access/)
 {
@@ -1775,11 +1802,7 @@ package-lock.json
     "es2022": true,
     "jest": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
-  ],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:react-hooks/recommended"],
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module",
@@ -1787,10 +1810,7 @@ package-lock.json
       "jsx": true
     }
   },
-  "plugins": [
-    "react",
-    "react-hooks"
-  ],
+  "plugins": ["react", "react-hooks"],
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "warn",
@@ -1804,27 +1824,20 @@ package-lock.json
       "version": "detect"
     }
   },
-  "ignorePatterns": [
-    "node_modules/",
-    "dist/",
-    "coverage/"
-  ]
+  "ignorePatterns": ["node_modules/", "dist/", "coverage/"]
 }
 ```
 
 ### Pre-commit Hooks Setup
 
 #### Husky Configuration
+
 ```json
 // package.json (root level)
 {
   "name": "ldschurch-stream",
   "private": true,
-  "workspaces": [
-    "api",
-    "dashboard",
-    "access"
-  ],
+  "workspaces": ["api", "dashboard", "access"],
   "devDependencies": {
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
@@ -1842,29 +1855,20 @@ package-lock.json
 ```
 
 #### Lint-staged Configuration
+
 ```json
 // .lintstagedrc.json (root level)
 {
-  "*.{js,jsx,ts,tsx}": [
-    "eslint --fix",
-    "prettier --write"
-  ],
-  "*.{json,md,yml,yaml}": [
-    "prettier --write"
-  ],
-  "api/**/*.js": [
-    "cd api && npm run lint:fix"
-  ],
-  "dashboard/**/*.{js,jsx}": [
-    "cd dashboard && npm run lint:fix"
-  ],
-  "access/**/*.{js,jsx}": [
-    "cd access && npm run lint:fix"
-  ]
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,yml,yaml}": ["prettier --write"],
+  "api/**/*.js": ["cd api && npm run lint:fix"],
+  "dashboard/**/*.{js,jsx}": ["cd dashboard && npm run lint:fix"],
+  "access/**/*.{js,jsx}": ["cd access && npm run lint:fix"]
 }
 ```
 
 #### Git Hooks
+
 ```bash
 #!/usr/bin/env sh
 # .husky/pre-commit
@@ -1876,6 +1880,7 @@ npx lint-staged
 ### Service-Level Package.json Scripts
 
 #### API Scripts
+
 ```json
 // api/package.json
 {
@@ -1901,6 +1906,7 @@ npx lint-staged
 ```
 
 #### Frontend Scripts
+
 ```json
 // dashboard/package.json (same for access/)
 {
@@ -1931,6 +1937,7 @@ npx lint-staged
 ### IDE Configuration
 
 #### VSCode Settings
+
 ```json
 // .vscode/settings.json
 {
@@ -1939,11 +1946,7 @@ npx lint-staged
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "eslint.workingDirectories": [
-    "api",
-    "dashboard", 
-    "access"
-  ],
+  "eslint.workingDirectories": ["api", "dashboard", "access"],
   "files.exclude": {
     "**/node_modules": true,
     "**/coverage": true,
@@ -1953,6 +1956,7 @@ npx lint-staged
 ```
 
 #### VSCode Extensions
+
 ```json
 // .vscode/extensions.json
 {
@@ -1968,6 +1972,7 @@ npx lint-staged
 ### CI Integration Updates
 
 #### Updated Test Workflow
+
 ```yaml
 # .github/workflows/test.yml (addition to existing)
 jobs:
@@ -1976,24 +1981,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install root dependencies
         run: npm ci
-      
+
       - name: Check Prettier formatting
         run: npm run format:check
-      
+
       - name: Run ESLint
         run: npm run lint
 
   test:
-    needs: lint-and-format  # Ensure linting passes before tests
+    needs: lint-and-format # Ensure linting passes before tests
     runs-on: ubuntu-latest
     # ... rest of existing test job
 ```
@@ -2001,6 +2006,7 @@ jobs:
 ### Development Workflow
 
 #### Setup Commands
+
 ```bash
 # Initial setup
 npm install                    # Install root dependencies and setup husky
@@ -2019,6 +2025,7 @@ cd dashboard && npm run format # Format specific service
 ```
 
 ### Git Workflow Integration
+
 ```bash
 # Pre-commit hook automatically runs:
 # 1. ESLint with --fix on staged JS/JSX files
@@ -2035,6 +2042,7 @@ git commit -m "feat: add new feature"  # Triggers pre-commit hooks
 ```
 
 ### Configuration Files Structure
+
 ```
 ldschurch-stream/
 ├── .prettierrc               # Shared Prettier config
@@ -2060,9 +2068,11 @@ ldschurch-stream/
 ## API Documentation
 
 ### OpenAPI Documentation Setup
+
 Using code-generated OpenAPI documentation with JSDoc comments for maintainability.
 
 #### Swagger Configuration
+
 ```javascript
 // api/src/config/swagger.js
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -2077,24 +2087,25 @@ const options = {
       description: 'API for managing LDS Church streaming services',
       contact: {
         name: 'Support',
-        email: 'support@ldschurch.stream'
-      }
+        email: 'support@ldschurch.stream',
+      },
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'production' 
-          ? 'https://api.ldschurch.stream' 
-          : 'http://api.traefik.me',
-        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
-      }
+        url:
+          process.env.NODE_ENV === 'production'
+            ? 'https://api.ldschurch.stream'
+            : 'http://api.traefik.me',
+        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development',
+      },
     ],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT'
-        }
+          bearerFormat: 'JWT',
+        },
       },
       schemas: {
         Error: {
@@ -2105,18 +2116,15 @@ const options = {
               properties: {
                 code: { type: 'string' },
                 message: { type: 'string' },
-                correlationId: { type: 'string' }
-              }
-            }
-          }
-        }
-      }
-    }
+                correlationId: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  apis: [
-    './src/routes/*.js',
-    './src/models/*.js'
-  ]
+  apis: ['./src/routes/*.js', './src/models/*.js'],
 };
 
 const specs = swaggerJsdoc(options);
@@ -2125,15 +2133,20 @@ module.exports = { specs, swaggerUi };
 ```
 
 #### Express Integration
+
 ```javascript
 // api/src/app.js
 const { specs, swaggerUi } = require('./config/swagger');
 
 // Swagger documentation endpoint
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'LDSChurch.Stream API Documentation'
-}));
+app.use(
+  '/api/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'LDSChurch.Stream API Documentation',
+  })
+);
 
 // JSON spec endpoint
 app.get('/api/docs.json', (req, res) => {
@@ -2145,6 +2158,7 @@ app.get('/api/docs.json', (req, res) => {
 ### Route Documentation Examples
 
 #### Authentication Routes
+
 ```javascript
 // api/src/routes/auth.js
 /**
@@ -2204,6 +2218,7 @@ router.post('/login', authController.login);
 ```
 
 #### Stream Management Routes
+
 ```javascript
 // api/src/routes/units.js
 /**
@@ -2264,6 +2279,7 @@ router.post('/login', authController.login);
 ```
 
 #### Public API Routes
+
 ```javascript
 // api/src/routes/public.js
 /**
@@ -2330,6 +2346,7 @@ router.post('/login', authController.login);
 ```
 
 ### Model Documentation
+
 ```javascript
 // api/src/models/StreamEvent.js
 /**
@@ -2395,6 +2412,7 @@ const streamEventSchema = new mongoose.Schema({
 ```
 
 ### Package.json Dependencies
+
 ```json
 // api/package.json
 {
@@ -2410,6 +2428,7 @@ const streamEventSchema = new mongoose.Schema({
 ```
 
 ### Documentation Generation Script
+
 ```javascript
 // api/scripts/generate-docs.js
 const fs = require('fs');
@@ -2422,15 +2441,13 @@ if (!fs.existsSync(docsDir)) {
   fs.mkdirSync(docsDir, { recursive: true });
 }
 
-fs.writeFileSync(
-  path.join(docsDir, 'openapi.json'),
-  JSON.stringify(specs, null, 2)
-);
+fs.writeFileSync(path.join(docsDir, 'openapi.json'), JSON.stringify(specs, null, 2));
 
 console.log('OpenAPI documentation generated at docs/openapi.json');
 ```
 
 ### Documentation URLs
+
 ```bash
 # Development
 http://api.traefik.me/api/docs          # Swagger UI
@@ -2442,13 +2459,14 @@ https://api.ldschurch.stream/api/docs.json     # OpenAPI JSON spec
 ```
 
 ### CI Integration
+
 ```yaml
 # .github/workflows/build-and-deploy.yml (addition)
 - name: Generate API documentation
   run: |
     cd api
     npm run docs:generate
-    
+
 - name: Upload documentation artifact
   uses: actions/upload-artifact@v3
   with:
@@ -2457,6 +2475,7 @@ https://api.ldschurch.stream/api/docs.json     # OpenAPI JSON spec
 ```
 
 ### Documentation Structure
+
 ```
 api/
 ├── src/
@@ -2473,6 +2492,7 @@ api/
 ## Logging & Request Correlation
 
 ### Structured Logging Setup
+
 ```javascript
 // api/src/utils/logger.js
 const winston = require('winston');
@@ -2484,35 +2504,37 @@ const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { 
+  defaultMeta: {
     service: 'ldschurch-stream-api',
-    version: process.env.APP_VERSION || '1.0.0'
+    version: process.env.APP_VERSION || '1.0.0',
   },
   transports: [
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+    }),
+  ],
 });
 
 // Production: Add file transports
 if (process.env.NODE_ENV === 'production') {
-  logger.add(new winston.transports.File({ 
-    filename: 'logs/error.log', 
-    level: 'error' 
-  }));
-  logger.add(new winston.transports.File({ 
-    filename: 'logs/combined.log' 
-  }));
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+    })
+  );
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+    })
+  );
 }
 
 module.exports = logger;
 ```
 
 ### Request Correlation Middleware
+
 ```javascript
 // api/src/middleware/correlation.js
 const { v4: uuidv4 } = require('uuid');
@@ -2521,35 +2543,35 @@ const logger = require('../utils/logger');
 const correlationMiddleware = (req, res, next) => {
   // Use existing correlation ID or generate new one
   req.correlationId = req.headers['x-correlation-id'] || uuidv4();
-  
+
   // Add to response headers for client tracking
   res.setHeader('x-correlation-id', req.correlationId);
-  
+
   // Create request-scoped logger
   req.logger = logger.child({
     correlationId: req.correlationId,
     method: req.method,
     url: req.url,
     userAgent: req.get('User-Agent'),
-    ip: req.ip
+    ip: req.ip,
   });
-  
+
   // Log incoming request
   req.logger.info('Request started', {
-    body: req.method === 'POST' ? req.body : undefined
+    body: req.method === 'POST' ? req.body : undefined,
   });
-  
+
   // Track response time
   const startTime = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     req.logger.info('Request completed', {
       statusCode: res.statusCode,
-      duration: `${duration}ms`
+      duration: `${duration}ms`,
     });
   });
-  
+
   next();
 };
 
@@ -2557,6 +2579,7 @@ module.exports = correlationMiddleware;
 ```
 
 ### Enhanced Error Handler with Correlation
+
 ```javascript
 // api/src/middleware/errorHandler.js
 const logger = require('../utils/logger');
@@ -2576,7 +2599,7 @@ const errorHandler = (err, req, res, next) => {
 
   // Use request logger if available, fallback to global logger
   const requestLogger = req.logger || logger;
-  
+
   // Log error with correlation context
   requestLogger.error('Request failed', {
     error: err.message,
@@ -2584,7 +2607,7 @@ const errorHandler = (err, req, res, next) => {
     statusCode: error.statusCode || 500,
     code: error.code,
     userId: req.user?.id,
-    unitId: req.params?.unitId
+    unitId: req.params?.unitId,
   });
 
   // Mongoose validation error
@@ -2609,8 +2632,8 @@ const errorHandler = (err, req, res, next) => {
       code: error.code || 'INTERNAL_ERROR',
       message: error.message || 'Something went wrong',
       correlationId: req.correlationId,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    },
   });
 };
 
@@ -2618,6 +2641,7 @@ module.exports = { AppError, errorHandler };
 ```
 
 ### Service Layer Logging
+
 ```javascript
 // api/src/services/youtubeService.js
 const logger = require('../utils/logger');
@@ -2629,10 +2653,10 @@ class YouTubeService {
 
   async createLiveEvent(title, scheduledStartTime, correlationId) {
     const requestLogger = this.logger.child({ correlationId });
-    
+
     requestLogger.info('Creating YouTube Live event', {
       title,
-      scheduledStartTime
+      scheduledStartTime,
     });
 
     try {
@@ -2641,17 +2665,17 @@ class YouTubeService {
         requestBody: {
           snippet: {
             title,
-            scheduledStartTime
+            scheduledStartTime,
           },
           status: {
-            privacyStatus: 'unlisted'
-          }
-        }
+            privacyStatus: 'unlisted',
+          },
+        },
       });
 
       requestLogger.info('YouTube Live event created successfully', {
         eventId: response.data.id,
-        title: response.data.snippet.title
+        title: response.data.snippet.title,
       });
 
       return response.data;
@@ -2659,7 +2683,7 @@ class YouTubeService {
       requestLogger.error('Failed to create YouTube Live event', {
         error: error.message,
         title,
-        quotaExceeded: error.code === 403
+        quotaExceeded: error.code === 403,
       });
       throw error;
     }
@@ -2668,6 +2692,7 @@ class YouTubeService {
 ```
 
 ### Controller Logging Pattern
+
 ```javascript
 // api/src/controllers/streams.js
 const StreamEvent = require('../models/StreamEvent');
@@ -2678,7 +2703,7 @@ const createStream = async (req, res, next) => {
     req.logger.info('Creating new stream event', {
       unitId: req.params.unitId,
       scheduledDate: req.body.scheduledDate,
-      userId: req.user.id
+      userId: req.user.id,
     });
 
     // Create YouTube event with correlation ID
@@ -2694,12 +2719,12 @@ const createStream = async (req, res, next) => {
       scheduledTime: req.body.scheduledTime,
       youtubeEventId: youtubeEvent.id,
       youtubeStreamUrl: youtubeEvent.snippet.thumbnails?.default?.url,
-      streamKey: youtubeEvent.cdn?.ingestionInfo?.streamName
+      streamKey: youtubeEvent.cdn?.ingestionInfo?.streamName,
     });
 
     req.logger.info('Stream event created successfully', {
       streamEventId: streamEvent._id,
-      youtubeEventId: youtubeEvent.id
+      youtubeEventId: youtubeEvent.id,
     });
 
     res.status(201).json(streamEvent);
@@ -2710,6 +2735,7 @@ const createStream = async (req, res, next) => {
 ```
 
 ### Frontend Correlation Integration
+
 ```javascript
 // dashboard/src/services/api.js
 import axios from 'axios';
@@ -2718,35 +2744,35 @@ import { v4 as uuidv4 } from 'uuid';
 // API instance will be configured after config loads
 let api;
 
-export const initializeApi = (config) => {
+export const initializeApi = config => {
   api = axios.create({
-    baseURL: config.apiUrl
+    baseURL: config.apiUrl,
   });
 
   // Add correlation ID to all requests
-  api.interceptors.request.use((config) => {
+  api.interceptors.request.use(config => {
     // Generate or reuse correlation ID
     if (!config.headers['x-correlation-id']) {
       config.headers['x-correlation-id'] = uuidv4();
     }
-    
+
     return config;
   });
 
   // Log API errors with correlation ID
   api.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    response => response,
+    error => {
       const correlationId = error.response?.headers['x-correlation-id'];
-      
+
       console.error('API request failed', {
         correlationId,
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
-        message: error.response?.data?.error?.message
+        message: error.response?.data?.error?.message,
       });
-      
+
       return Promise.reject(error);
     }
   );
@@ -2763,18 +2789,18 @@ export const getApi = () => {
 
 // Log API errors with correlation ID
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     const correlationId = error.response?.headers['x-correlation-id'];
-    
+
     console.error('API request failed', {
       correlationId,
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
-      message: error.response?.data?.error?.message
+      message: error.response?.data?.error?.message,
     });
-    
+
     return Promise.reject(error);
   }
 );
@@ -2783,6 +2809,7 @@ export default api;
 ```
 
 ### Cron Job Logging
+
 ```javascript
 // api/src/jobs/reportGenerator.js
 const logger = require('../utils/logger');
@@ -2791,31 +2818,31 @@ const { v4: uuidv4 } = require('uuid');
 class ReportGenerator {
   async run() {
     const correlationId = uuidv4();
-    const jobLogger = logger.child({ 
+    const jobLogger = logger.child({
       correlationId,
-      job: 'report-generator'
+      job: 'report-generator',
     });
 
     jobLogger.info('Starting weekly report generation');
-    
+
     try {
       const completedStreams = await this.findCompletedStreams();
-      
+
       jobLogger.info('Found streams to process', {
-        count: completedStreams.length
+        count: completedStreams.length,
       });
 
       for (const stream of completedStreams) {
         await this.generateUnitReport(stream, jobLogger);
       }
-      
+
       jobLogger.info('Weekly report generation completed', {
-        processedUnits: completedStreams.length
+        processedUnits: completedStreams.length,
       });
     } catch (error) {
       jobLogger.error('Weekly report generation failed', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       throw error;
     }
@@ -2825,21 +2852,21 @@ class ReportGenerator {
     const unitLogger = parentLogger.child({
       unitId: streamEvent.unitId._id,
       unitName: streamEvent.unitId.name,
-      streamEventId: streamEvent._id
+      streamEventId: streamEvent._id,
     });
 
     unitLogger.info('Generating unit report');
-    
+
     try {
       // Report generation logic...
-      
+
       unitLogger.info('Unit report generated successfully', {
         attendeeCount: attendance.length,
-        emailsSent: unit.leadershipEmails.length
+        emailsSent: unit.leadershipEmails.length,
       });
     } catch (error) {
       unitLogger.error('Failed to generate unit report', {
-        error: error.message
+        error: error.message,
       });
       throw error;
     }
@@ -2848,6 +2875,7 @@ class ReportGenerator {
 ```
 
 ### Application Integration
+
 ```javascript
 // api/src/app.js
 const express = require('express');
@@ -2874,10 +2902,10 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   logger.error('Uncaught exception', {
     error: error.message,
-    stack: error.stack
+    stack: error.stack,
   });
   process.exit(1);
 });
@@ -2885,34 +2913,36 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled promise rejection', {
     reason: reason?.message || reason,
-    stack: reason?.stack
+    stack: reason?.stack,
   });
 });
 ```
 
 ### Log Aggregation Configuration
+
 ```yaml
 # compose.yaml (development)
 services:
   api:
     # ... existing config
     volumes:
-      - ./api/logs:/app/logs  # Mount logs directory
+      - ./api/logs:/app/logs # Mount logs directory
     environment:
       - LOG_LEVEL=debug
 
   # Optional: Add log aggregation for development
   loki:
     image: grafana/loki:latest
-    ports: ["3100:3100"]
+    ports: ['3100:3100']
     command: -config.file=/etc/loki/local-config.yaml
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.loki.rule=Host(`logs.traefik.me`)"
-      - "traefik.http.services.loki.loadbalancer.server.port=3100"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.loki.rule=Host(`logs.traefik.me`)'
+      - 'traefik.http.services.loki.loadbalancer.server.port=3100'
 ```
 
 ### Production Logging Environment
+
 ```bash
 # Production environment variables
 LOG_LEVEL=info
@@ -2925,25 +2955,26 @@ APP_VERSION=1.0.0
 ## Local Development Setup
 
 ### Docker Compose Configuration
+
 ```yaml
 # compose.yaml
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:3.6.5
     command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
     ports:
-      - "80:80"
-      - "8080:8080"  # Traefik dashboard
+      - '80:80'
+      - '8080:8080' # Traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.traefik.me`)"
-      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.traefik.me`)'
+      - 'traefik.http.services.traefik.loadbalancer.server.port=8080'
 
   mongodb:
     image: mongo:7
@@ -2953,8 +2984,8 @@ services:
     volumes:
       - mongodb_data:/data/db
     labels:
-      - "traefik.enable=false"
-  
+      - 'traefik.enable=false'
+
   mongo-express:
     image: mongo-express
     environment:
@@ -2962,18 +2993,18 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mongo-express.rule=Host(`db.traefik.me`)"
-      - "traefik.http.services.mongo-express.loadbalancer.server.port=8081"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mongo-express.rule=Host(`db.traefik.me`)'
+      - 'traefik.http.services.mongo-express.loadbalancer.server.port=8081'
     depends_on:
       - mongodb
-  
+
   mailhog:
     image: mailhog/mailhog
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)"
-      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
 
   api:
     build:
@@ -2986,9 +3017,9 @@ services:
       - SMTP_PORT=1025
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.traefik.me`)"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'
+      - 'traefik.http.services.api.loadbalancer.server.port=3000'
     depends_on:
       - mongodb
       - mailhog
@@ -3005,9 +3036,9 @@ services:
       context: ./dashboard
       target: dev
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)"
-      - "traefik.http.services.dashboard.loadbalancer.server.port=5173"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)'
+      - 'traefik.http.services.dashboard.loadbalancer.server.port=5173'
     depends_on:
       - api
     develop:
@@ -3026,9 +3057,9 @@ services:
       context: ./access
       target: dev
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.access.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.traefik.me`)"
-      - "traefik.http.services.access.loadbalancer.server.port=5173"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.access.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.traefik.me`)'
+      - 'traefik.http.services.access.loadbalancer.server.port=5173'
     depends_on:
       - api
     develop:
@@ -3049,6 +3080,7 @@ volumes:
 ### Multi-stage Dockerfile Pattern
 
 #### API Dockerfile
+
 ```dockerfile
 # api/Dockerfile
 FROM node:18-alpine AS base
@@ -3069,6 +3101,7 @@ CMD ["node", "src/app.js"]
 ```
 
 #### Frontend Dockerfile
+
 ```dockerfile
 # dashboard/Dockerfile (same for access/)
 FROM node:18-alpine AS base
@@ -3094,6 +3127,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### Package.json Scripts for Development
+
 ```json
 {
   "scripts": {
@@ -3105,17 +3139,19 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### Local Development URLs
+
 - **Traefik Dashboard**: http://traefik.traefik.me
 - **API**: http://api.traefik.me
 - **Stream Dashboard**: http://dashboard.traefik.me
 - **Database Admin**: http://db.traefik.me
 - **Email Testing**: http://mail.traefik.me
-- **Stream Access Examples**: 
+- **Stream Access Examples**:
   - http://blacksburg-va.traefik.me
   - http://provo-ut.traefik.me
   - http://any-unit.traefik.me
 
 ### Development Commands
+
 ```bash
 # Start all services with hot reload
 docker compose up --watch
@@ -3131,6 +3167,7 @@ docker compose logs -f api
 ```
 
 ### Secret Management for Development
+
 ```bash
 secrets/
 ├── jwt_secret.txt
@@ -3144,6 +3181,7 @@ secrets/
 ```
 
 ### Environment File Templates
+
 ```bash
 # api/.env.example
 NODE_ENV=development
@@ -3158,6 +3196,7 @@ CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
 ```
 
 ### Frontend Configuration Files
+
 Frontend apps use runtime configuration instead of build-time environment variables:
 
 ```json
