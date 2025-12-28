@@ -1,33 +1,86 @@
-import React from 'react'
-import { Card, Table } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Spinner, Alert } from 'react-bootstrap';
+import { useAuth } from '../context/AuthContext';
+import { streamService } from '../services/api';
 
 const Reports = () => {
+  const { user } = useAuth();
+  const [attendance, setAttendance] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      if (!user?.units?.[0]) return;
+
+      try {
+        setLoading(true);
+        const unitId = typeof user.units[0] === 'string' ? user.units[0] : user.units[0]._id;
+        const response = await streamService.getAttendance(unitId);
+        setAttendance(response.data);
+      } catch (err) {
+        setError(err.response?.data?.error?.message || 'Failed to load attendance data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="text-center">
+        <Spinner animation="border" />
+        <p>Loading attendance data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <Alert variant="danger">Error: {error}</Alert>;
+  }
+
   return (
     <div>
       <h1>Attendance Reports</h1>
       <Card>
-        <Card.Header>Weekly Attendance Summary</Card.Header>
+        <Card.Header>Recent Attendance ({attendance.length} records)</Card.Header>
         <Card.Body>
           <Table striped bordered hover>
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Stream Title</th>
-                <th>Attendance</th>
+                <th>Time</th>
+                <th>Attendee Name</th>
+                <th>Count</th>
+                <th>Submitted</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colSpan={3} className="text-center text-muted">
-                  No attendance data available
-                </td>
-              </tr>
+              {attendance.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center text-muted">
+                    No attendance data available
+                  </td>
+                </tr>
+              ) : (
+                attendance.map(record => (
+                  <tr key={record._id}>
+                    <td>{new Date(record.streamEventId.scheduledDate).toLocaleDateString()}</td>
+                    <td>{record.streamEventId.scheduledTime}</td>
+                    <td>{record.attendeeName}</td>
+                    <td>{record.attendeeCount}</td>
+                    <td>{new Date(record.submittedAt).toLocaleString()}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </Table>
         </Card.Body>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default Reports
+export default Reports;

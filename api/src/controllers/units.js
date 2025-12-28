@@ -13,9 +13,7 @@ const getStreams = async (req, res, next) => {
       query.status = status;
     }
 
-    const streams = await StreamEvent.find(query)
-      .sort({ scheduledDate: -1 })
-      .limit(50);
+    const streams = await StreamEvent.find(query).sort({ scheduledDate: -1 }).limit(50);
 
     res.json(streams);
   } catch (error) {
@@ -37,7 +35,7 @@ const createStream = async (req, res, next) => {
       unitId,
       scheduledDate: new Date(scheduledDate),
       scheduledTime,
-      isSpecialEvent: isSpecialEvent || false
+      isSpecialEvent: isSpecialEvent || false,
     };
 
     if (isSpecialEvent) {
@@ -85,13 +83,13 @@ const getAttendance = async (req, res, next) => {
       unitId,
       scheduledDate: {
         $gte: startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        $lte: endDate ? new Date(endDate) : new Date()
-      }
+        $lte: endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Include next year
+      },
     });
 
     const streamIds = streams.map(s => s._id);
-    
-    let attendanceQuery = { streamEventId: { $in: streamIds } };
+
+    const attendanceQuery = { streamEventId: { $in: streamIds } };
     if (search) {
       attendanceQuery.attendeeName = { $regex: search, $options: 'i' };
     }
@@ -110,5 +108,5 @@ module.exports = {
   getStreams,
   createStream,
   updateStream,
-  getAttendance
+  getAttendance,
 };
