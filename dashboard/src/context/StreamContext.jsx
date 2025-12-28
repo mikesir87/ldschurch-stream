@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { streamService } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const StreamContext = createContext();
 
@@ -15,15 +16,19 @@ export const StreamProvider = ({ children }) => {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
-  // For now, using a hardcoded unitId - this should come from auth context
-  const unitId = '000000000000000000000001'; // Development unit ID
+  // Use the first unit from the user's units, or fallback to hardcoded for development
+  const unitId = user?.units?.[0]?._id || user?.units?.[0] || '000000000000000000000001';
 
   const loadStreams = async () => {
+    if (!unitId) return;
+
     try {
       setLoading(true);
       const response = await streamService.getStreams(unitId);
       setStreams(response.data);
+      setError(null);
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to load streams');
     } finally {
@@ -32,6 +37,8 @@ export const StreamProvider = ({ children }) => {
   };
 
   const createStream = async streamData => {
+    if (!unitId) return;
+
     try {
       setLoading(true);
       const response = await streamService.createStream(unitId, streamData);
@@ -46,6 +53,8 @@ export const StreamProvider = ({ children }) => {
   };
 
   const deleteStream = async streamId => {
+    if (!unitId) return;
+
     try {
       setLoading(true);
       await streamService.deleteStream(unitId, streamId);
@@ -60,8 +69,10 @@ export const StreamProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    loadStreams();
-  }, []);
+    if (user && unitId) {
+      loadStreams();
+    }
+  }, [user, unitId]);
 
   const value = {
     streams,
@@ -70,6 +81,7 @@ export const StreamProvider = ({ children }) => {
     createStream,
     deleteStream,
     loadStreams,
+    unitId,
   };
 
   return <StreamContext.Provider value={value}>{children}</StreamContext.Provider>;

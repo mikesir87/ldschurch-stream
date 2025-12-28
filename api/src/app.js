@@ -65,7 +65,7 @@ const startServer = async () => {
     await connectDatabase();
 
     // Seed development data if in development mode
-    if (config.nodeEnv === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       const { seedDevelopmentData } = require('./utils/seed');
       await seedDevelopmentData();
     }

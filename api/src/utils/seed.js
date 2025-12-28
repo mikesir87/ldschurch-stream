@@ -1,44 +1,39 @@
 const bcrypt = require('bcrypt');
-const Unit = require('../models/Unit');
 const User = require('../models/User');
-const logger = require('../utils/logger');
+const Unit = require('../models/Unit');
+const config = require('../config');
+const logger = require('./logger');
 
 const seedDevelopmentData = async () => {
   try {
-    // Check if unit with ID 1 already exists
-    const existingUnit = await Unit.findById('000000000000000000000001');
-    if (existingUnit) {
-      logger.info('Development unit already exists, skipping seed');
+    // Check if test user already exists
+    const existingUser = await User.findOne({ email: 'admin@example.com' });
+    if (existingUser) {
+      logger.info('Development seed data already exists');
       return;
     }
 
-    // Create development unit
-    const unit = new Unit({
-      _id: '000000000000000000000001',
-      name: 'Development Ward',
-      subdomain: 'dev-ward',
+    // Create test unit
+    const unit = await Unit.create({
+      name: 'Test Ward',
+      subdomain: 'test-unit',
       leadershipEmails: ['leadership@example.com'],
       isActive: true,
     });
-    await unit.save();
 
-    // Create development user
-    const hashedPassword = await bcrypt.hash('password123', 12);
-    const user = new User({
-      email: 'specialist@example.com',
-      name: 'Dev Specialist',
+    // Create test user
+    const hashedPassword = await bcrypt.hash('password123', config.auth.bcryptRounds);
+    await User.create({
+      email: 'admin@example.com',
+      name: 'Test Admin',
       hashedPassword,
       units: [unit._id],
-      role: 'specialist',
+      role: 'global_admin',
       isActive: true,
     });
-    await user.save();
 
-    logger.info('Development data seeded successfully', {
-      unitId: unit._id,
-      unitName: unit.name,
-      userEmail: user.email,
-    });
+    logger.info('Development seed data created successfully');
+    logger.info('Test login: admin@example.com / password123');
   } catch (error) {
     logger.error('Failed to seed development data:', error);
   }
