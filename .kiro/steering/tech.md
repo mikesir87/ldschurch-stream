@@ -712,6 +712,10 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['dashboard.traefik.me'], // or 'all' for wildcard subdomains
+  },
   build: {
     // Enable source maps for production debugging
     sourcemap: true,
@@ -1220,7 +1224,7 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)'
-      - 'traefik.http.services.dashboard.loadbalancer.server.port=3000'
+      - 'traefik.http.services.dashboard.loadbalancer.server.port=5173'
     depends_on:
       - api
 
@@ -1230,7 +1234,7 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.landing.rule=Host(`ldschurch.traefik.me`)'
-      - 'traefik.http.services.landing.loadbalancer.server.port=3000'
+      - 'traefik.http.services.landing.loadbalancer.server.port=5173'
 
   # Stream access app (simulates subdomain routing)
   access:
@@ -1238,7 +1242,7 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.access.rule=Host(`blacksburg-va.traefik.me`) || Host(`provo-ut.traefik.me`) || HostRegexp(`{subdomain:[a-z0-9-]+}.traefik.me`)'
-      - 'traefik.http.services.access.loadbalancer.server.port=3000'
+      - 'traefik.http.services.access.loadbalancer.server.port=5173'
     depends_on:
       - api
 ```
