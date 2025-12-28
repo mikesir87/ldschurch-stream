@@ -14,10 +14,12 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: config.server.corsOrigins,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: config.server.corsOrigins,
+    credentials: true,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -26,9 +28,9 @@ const limiter = rateLimit({
   message: {
     error: {
       code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests, please try again later'
-    }
-  }
+      message: 'Too many requests, please try again later',
+    },
+  },
 });
 app.use(limiter);
 
@@ -53,15 +55,21 @@ app.use('*', (req, res) => {
   res.status(404).json({
     error: {
       code: 'NOT_FOUND',
-      message: 'Endpoint not found'
-    }
+      message: 'Endpoint not found',
+    },
   });
 });
 
 const startServer = async () => {
   try {
     await connectDatabase();
-    
+
+    // Seed development data if in development mode
+    if (config.nodeEnv === 'development') {
+      const { seedDevelopmentData } = require('./utils/seed');
+      await seedDevelopmentData();
+    }
+
     const port = config.server.port;
     app.listen(port, () => {
       logger.info(`Server running on port ${port}`);

@@ -1,41 +1,76 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { streamService } from '../services/api';
 
-const StreamContext = createContext()
+const StreamContext = createContext();
 
 export const useStream = () => {
-  const context = useContext(StreamContext)
+  const context = useContext(StreamContext);
   if (!context) {
-    throw new Error('useStream must be used within a StreamProvider')
+    throw new Error('useStream must be used within a StreamProvider');
   }
-  return context
-}
+  return context;
+};
 
 export const StreamProvider = ({ children }) => {
-  const [streams, setStreams] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [streams, setStreams] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const createStream = async (streamData) => {
-    setLoading(true)
-    // API call would go here
-    setLoading(false)
-  }
+  // For now, using a hardcoded unitId - this should come from auth context
+  const unitId = '000000000000000000000001'; // Development unit ID
 
-  const deleteStream = async (streamId) => {
-    setLoading(true)
-    // API call would go here
-    setLoading(false)
-  }
+  const loadStreams = async () => {
+    try {
+      setLoading(true);
+      const response = await streamService.getStreams(unitId);
+      setStreams(response.data);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Failed to load streams');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createStream = async streamData => {
+    try {
+      setLoading(true);
+      const response = await streamService.createStream(unitId, streamData);
+      setStreams(prev => [...prev, response.data]);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Failed to create stream');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteStream = async streamId => {
+    try {
+      setLoading(true);
+      await streamService.deleteStream(unitId, streamId);
+      setStreams(prev => prev.filter(stream => stream._id !== streamId));
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Failed to delete stream');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStreams();
+  }, []);
 
   const value = {
     streams,
     loading,
+    error,
     createStream,
-    deleteStream
-  }
+    deleteStream,
+    loadStreams,
+  };
 
-  return (
-    <StreamContext.Provider value={value}>
-      {children}
-    </StreamContext.Provider>
-  )
-}
+  return <StreamContext.Provider value={value}>{children}</StreamContext.Provider>;
+};
