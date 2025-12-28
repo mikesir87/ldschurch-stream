@@ -18,8 +18,28 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      // For now, just set a mock user if token exists
-      setUser({ id: '1', email: 'admin@example.com', role: 'global_admin' });
+      try {
+        // Decode JWT to get user data
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        // Check if token is expired
+        if (payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem('accessToken');
+          setUser(null);
+        } else {
+          // Set user from token payload
+          setUser({
+            id: payload.id,
+            email: payload.email,
+            role: payload.role,
+            units: payload.units,
+          });
+        }
+      } catch (error) {
+        console.error('Invalid token:', error);
+        localStorage.removeItem('accessToken');
+        setUser(null);
+      }
     }
     setLoading(false);
   }, []);

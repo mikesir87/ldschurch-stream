@@ -18,8 +18,8 @@ export const StreamProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { user } = useAuth();
 
-  // Use the first unit from the user's units, or fallback to hardcoded for development
-  const unitId = user?.units?.[0]?._id || user?.units?.[0] || '000000000000000000000001';
+  // Use the first unit from the user's units
+  const unitId = user?.units?.[0]?._id || user?.units?.[0];
 
   const loadStreams = async () => {
     if (!unitId) return;
