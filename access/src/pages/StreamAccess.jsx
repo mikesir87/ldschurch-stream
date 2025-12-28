@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Card, Button, Alert, Spinner, Form } from 'react-bootstrap';
 import { initializeApi } from '../services/api';
 import { extractSubdomain } from '../utils/subdomain';
 
 const StreamAccess = () => {
-  const navigate = useNavigate();
   const [streamData, setStreamData] = useState(null);
   const [unit, setUnit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [attendeeName, setAttendeeName] = useState('');
+  const [attendeeCount, setAttendeeCount] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const loadStreamData = async () => {
@@ -38,6 +39,28 @@ const StreamAccess = () => {
     loadStreamData();
   }, []);
 
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const subdomain = extractSubdomain();
+      const api = await initializeApi();
+
+      const response = await api.post(`/api/public/${subdomain}/attend`, {
+        attendeeName: attendeeName.trim(),
+        attendeeCount: parseInt(attendeeCount),
+      });
+
+      // Redirect to YouTube stream
+      window.location.href = response.data.streamUrl;
+    } catch (err) {
+      console.error('Failed to submit attendance:', err);
+      setError(err.response?.data?.error?.message || 'Failed to submit attendance');
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center">
@@ -64,23 +87,39 @@ const StreamAccess = () => {
           <Card.Title className="mb-4">{unit?.name || 'Ward'} Sacrament Meeting</Card.Title>
 
           {streamData?.hasStream ? (
-            <div>
-              {streamData.stream?.youtubeStreamUrl && (
-                <div className="mb-4">
-                  <iframe
-                    width="100%"
-                    height="400"
-                    src={streamData.stream.youtubeStreamUrl}
-                    title="Sacrament Meeting Stream"
-                    frameBorder="0"
-                    allowFullScreen
-                  />
-                </div>
-              )}
-              <Button variant="primary" size="lg" onClick={() => navigate('/attendance')}>
-                Mark Attendance
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={attendeeName}
+                  onChange={e => setAttendeeName(e.target.value)}
+                  required
+                  placeholder="Enter your name"
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Number of Attendees</Form.Label>
+                <Form.Control
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={attendeeCount}
+                  onChange={e => setAttendeeCount(e.target.value)}
+                  required
+                />
+              </Form.Group>
+
+              <Button
+                variant="primary"
+                size="lg"
+                type="submit"
+                disabled={submitting || !attendeeName.trim()}
+              >
+                {submitting ? 'Submitting...' : 'Join Stream'}
               </Button>
-            </div>
+            </Form>
           ) : (
             <Alert variant="info">
               <h5>{streamData?.isSpecialEvent ? 'Special Event' : 'No Active Stream'}</h5>
