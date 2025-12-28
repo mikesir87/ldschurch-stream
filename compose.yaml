@@ -52,7 +52,7 @@ services:
       target: dev
     environment:
       - NODE_ENV=development
-      - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream
+      - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream?authSource=admin
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
