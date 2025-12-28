@@ -1,0 +1,18 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.workingDirectories": [
+    "api",
+    "dashboard", 
+    "access",
+    "landing"
+  ],
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/dist": true
+  }
+}

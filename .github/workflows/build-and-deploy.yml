@@ -1,0 +1,134 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: docker.io
+  REGISTRY_USER: mikesir87
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Check Prettier formatting
+        run: npm run format:check
+      
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    needs: lint-and-format
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+        env:
+          MONGODB_URL: mongodb://admin:password@localhost:27017/test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    strategy:
+      matrix:
+        service: [api, dashboard, access, landing]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Generate timestamp tag
+        id: timestamp
+        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/ldschurch-stream-${{ matrix.service }}:${{ steps.timestamp.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/ldschurch-stream-${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Generate timestamp tag
+        id: timestamp
+        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+      
+      - name: Update Kubernetes manifests
+        run: |
+          sed -i "s|mikesir87/ldschurch-stream-api:.*|mikesir87/ldschurch-stream-api:${{ steps.timestamp.outputs.tag }}|g" k8s/api-deployment.yaml
+          sed -i "s|mikesir87/ldschurch-stream-dashboard:.*|mikesir87/ldschurch-stream-dashboard:${{ steps.timestamp.outputs.tag }}|g" k8s/dashboard-deployment.yaml
+          sed -i "s|mikesir87/ldschurch-stream-access:.*|mikesir87/ldschurch-stream-access:${{ steps.timestamp.outputs.tag }}|g" k8s/access-deployment.yaml
+          sed -i "s|mikesir87/ldschurch-stream-landing:.*|mikesir87/ldschurch-stream-landing:${{ steps.timestamp.outputs.tag }}|g" k8s/landing-deployment.yaml
+      
+      - name: Deploy to Kubernetes
+        uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            k8s/namespace.yaml
+            k8s/mongodb.yaml
+            k8s/api-deployment.yaml
+            k8s/dashboard-deployment.yaml
+            k8s/access-deployment.yaml
+            k8s/landing-deployment.yaml
+            k8s/ingress.yaml
+          kubeconfig: ${{ secrets.KUBECONFIG }}

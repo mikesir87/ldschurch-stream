@@ -1,0 +1,12 @@
+secrets/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.DS_Store

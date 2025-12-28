@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ldschurch-stream-ingress
+  namespace: ldschurch-stream
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - ldschurch.stream
+        - api.ldschurch.stream
+        - dashboard.ldschurch.stream
+        - "*.ldschurch.stream"
+      secretName: ldschurch-stream-tls
+  rules:
+    - host: ldschurch.stream
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: landing-service
+                port:
+                  number: 80
+    - host: api.ldschurch.stream
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-service
+                port:
+                  number: 3000
+    - host: dashboard.ldschurch.stream
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard-service
+                port:
+                  number: 80
+    - host: "*.ldschurch.stream"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: access-service
+                port:
+                  number: 80

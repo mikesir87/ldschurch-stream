@@ -1,0 +1,23 @@
+{
+  "name": "ldschurch-stream",
+  "private": true,
+  "workspaces": [
+    "api",
+    "dashboard",
+    "access",
+    "landing"
+  ],
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "test": "npm test --workspaces"
+  }
+}
