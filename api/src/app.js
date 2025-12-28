@@ -16,7 +16,22 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: config.server.corsOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // Allow any subdomain of traefik.me or ldschurch.stream
+      if (origin.match(/^https?:\/\/[a-z0-9-]+\.(traefik\.me|ldschurch\.stream)$/)) {
+        return callback(null, true);
+      }
+
+      // Allow configured origins
+      if (config.server.corsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );

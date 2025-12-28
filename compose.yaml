@@ -98,7 +98,7 @@ services:
       target: dev
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.access.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.traefik.me`)'
+      - 'traefik.http.routers.access.rule=Host(`test-unit.traefik.me`)'
       - 'traefik.http.services.access.loadbalancer.server.port=5173'
     depends_on:
       - api
