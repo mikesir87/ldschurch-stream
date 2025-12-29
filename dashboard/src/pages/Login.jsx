@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -30,13 +28,19 @@ const Login = () => {
   };
 
   return (
-    <Container className="mt-5">
-      <Row className="justify-content-center">
-        <Col md={6} lg={4}>
-          <Card>
-            <Card.Body>
-              <Card.Title className="text-center mb-4">LDSChurch.Stream Dashboard</Card.Title>
+    <div className="login-background">
+      <Container className="py-5">
+        <div className="login-container">
+          <div className="text-center text-white mb-4">
+            <div className="login-title-row mb-3">
+              <img src="/logos/logo-white.svg" alt="LDSChurch.Stream" className="logo" />
+              <h1>LDSChurch.Stream</h1>
+            </div>
+            <p className="lead">Dashboard Login</p>
+          </div>
 
+          <Card className="login-card">
+            <Card.Body>
               {error && <Alert variant="danger">{error}</Alert>}
 
               <Form onSubmit={handleSubmit}>
@@ -66,9 +70,9 @@ const Login = () => {
               </Form>
             </Card.Body>
           </Card>
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </Container>
+    </div>
   );
 };
 
