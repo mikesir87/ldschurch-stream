@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { UnitProvider } from './context/UnitContext';
@@ -26,15 +25,17 @@ function AppContent() {
     <UnitProvider>
       <StreamProvider>
         <Router>
-          <Navigation />
-          <Container className="mt-4">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/settings" element={<UnitSettings />} />
-              {user.role === 'global_admin' && <Route path="/admin" element={<Admin />} />}
-            </Routes>
-          </Container>
+          <div className="app-layout">
+            <Navigation />
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/settings" element={<UnitSettings />} />
+                {user.role === 'global_admin' && <Route path="/admin" element={<Admin />} />}
+              </Routes>
+            </main>
+          </div>
         </Router>
       </StreamProvider>
     </UnitProvider>
