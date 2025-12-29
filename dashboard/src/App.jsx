@@ -7,7 +7,6 @@ import { StreamProvider } from './context/StreamContext';
 import { initializeApi } from './services/api';
 import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
-import StreamManagement from './pages/StreamManagement';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -28,7 +27,6 @@ function AppContent() {
         <Container className="mt-4">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/streams" element={<StreamManagement />} />
             <Route path="/reports" element={<Reports />} />
           </Routes>
         </Container>

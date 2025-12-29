@@ -15,7 +15,29 @@ const getStreams = async (req, res, next) => {
 
     const streams = await StreamEvent.find(query).sort({ scheduledDateTime: 1 }).limit(50);
 
-    res.json(streams);
+    // Get attendance counts for completed streams
+    const streamIds = streams.map(s => s._id);
+    const attendance = await AttendanceRecord.find({
+      streamEventId: { $in: streamIds },
+    });
+
+    // Add attendance counts to streams
+    const streamsWithAttendance = streams.map(stream => {
+      const streamAttendance = attendance.filter(
+        record => record.streamEventId.toString() === stream._id.toString()
+      );
+      const totalAttendees = streamAttendance.reduce(
+        (sum, record) => sum + record.attendeeCount,
+        0
+      );
+
+      return {
+        ...stream.toObject(),
+        totalAttendees: stream.status === 'completed' ? totalAttendees : undefined,
+      };
+    });
+
+    res.json(streamsWithAttendance);
   } catch (error) {
     next(error);
   }

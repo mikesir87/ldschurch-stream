@@ -16,9 +16,6 @@ const Navigation = () => {
             <LinkContainer to="/">
               <Nav.Link>Dashboard</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/streams">
-              <Nav.Link>Streams</Nav.Link>
-            </LinkContainer>
             <LinkContainer to="/reports">
               <Nav.Link>Reports</Nav.Link>
             </LinkContainer>
