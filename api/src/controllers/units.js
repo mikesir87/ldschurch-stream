@@ -113,11 +113,13 @@ const deleteStream = async (req, res, next) => {
       throw new AppError('Stream not found', 404, 'STREAM_NOT_FOUND');
     }
 
-    // Update status to cancelled instead of deleting
-    stream.status = 'cancelled';
-    await stream.save();
+    // Delete associated attendance records
+    await AttendanceRecord.deleteMany({ streamEventId: streamId });
 
-    res.json({ message: 'Stream cancelled successfully' });
+    // Delete the stream event
+    await StreamEvent.findByIdAndDelete(streamId);
+
+    res.json({ message: 'Stream deleted successfully' });
   } catch (error) {
     next(error);
   }

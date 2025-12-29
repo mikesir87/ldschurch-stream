@@ -114,7 +114,7 @@ const StreamManagement = () => {
                 onClick={() => handleDeleteStream(stream)}
                 disabled={loading}
               >
-                Cancel {stream.isSpecialEvent ? 'Event' : 'Stream'}
+                Delete {stream.isSpecialEvent ? 'Event' : 'Stream'}
               </Button>
             </Card.Body>
           </Card>
@@ -193,12 +193,12 @@ const StreamManagement = () => {
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Cancellation</Modal.Title>
+          <Modal.Title>Confirm Deletion</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {streamToDelete && (
             <p>
-              Are you sure you want to cancel this{' '}
+              Are you sure you want to delete this{' '}
               {streamToDelete.isSpecialEvent ? 'event' : 'stream'} scheduled for{' '}
               {new Date(streamToDelete.scheduledDate).toLocaleDateString()} at{' '}
               {streamToDelete.scheduledTime}?
@@ -210,7 +210,7 @@ const StreamManagement = () => {
             Keep Event
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
-            Cancel {streamToDelete?.isSpecialEvent ? 'Event' : 'Stream'}
+            Delete {streamToDelete?.isSpecialEvent ? 'Event' : 'Stream'}
           </Button>
         </Modal.Footer>
       </Modal>
