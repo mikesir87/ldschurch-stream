@@ -12,5 +12,7 @@ router.put('/:unitId/streams/:streamId', authorizeUnit, unitsController.updateSt
 router.delete('/:unitId/streams/:streamId', authorizeUnit, unitsController.deleteStream);
 router.get('/:unitId/attendance', authorizeUnit, unitsController.getAttendance);
 router.get('/:unitId/attendance/trends', authorizeUnit, unitsController.getAttendanceTrends);
+router.get('/:unitId/settings', authorizeUnit, unitsController.getUnitSettings);
+router.put('/:unitId/settings', authorizeUnit, unitsController.updateUnitSettings);
 
 module.exports = router;

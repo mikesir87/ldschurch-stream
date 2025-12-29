@@ -254,6 +254,44 @@ const deleteStream = async (req, res, next) => {
   }
 };
 
+const getUnitSettings = async (req, res, next) => {
+  try {
+    const { unitId } = req.params;
+
+    const unit = await Unit.findById(unitId);
+    if (!unit) {
+      throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
+    }
+
+    res.json({
+      leadershipEmails: unit.leadershipEmails || [],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUnitSettings = async (req, res, next) => {
+  try {
+    const { unitId } = req.params;
+    const { leadershipEmails } = req.body;
+
+    const unit = await Unit.findById(unitId);
+    if (!unit) {
+      throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
+    }
+
+    unit.leadershipEmails = leadershipEmails;
+    await unit.save();
+
+    res.json({
+      leadershipEmails: unit.leadershipEmails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUserUnits,
   getStreams,
@@ -262,4 +300,6 @@ module.exports = {
   deleteStream,
   getAttendance,
   getAttendanceTrends,
+  getUnitSettings,
+  updateUnitSettings,
 };

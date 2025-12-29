@@ -9,6 +9,7 @@ import { initializeApi } from './services/api';
 import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
+import UnitSettings from './pages/UnitSettings';
 import Login from './pages/Login';
 
 function AppContent() {
@@ -29,6 +30,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<UnitSettings />} />
             </Routes>
           </Container>
         </Router>

@@ -24,6 +24,9 @@ const Navigation = () => {
             <LinkContainer to="/reports">
               <Nav.Link>Reports</Nav.Link>
             </LinkContainer>
+            <LinkContainer to="/settings">
+              <Nav.Link>Unit Settings</Nav.Link>
+            </LinkContainer>
           </Nav>
           <Nav>
             {units.length > 1 ? (
