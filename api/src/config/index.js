@@ -58,4 +58,8 @@ module.exports = {
       max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
     },
   },
+
+  cron: {
+    youtubeBatchSchedule: process.env.YOUTUBE_BATCH_SCHEDULE || '0 */4 * * *',
+  },
 };

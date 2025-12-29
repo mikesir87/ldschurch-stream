@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const logger = require('../utils/logger');
+const config = require('../config');
 const youtubeBatchProcessor = require('./youtubeBatchProcessor');
 
 class JobScheduler {
@@ -8,8 +9,8 @@ class JobScheduler {
   }
 
   start() {
-    // YouTube batch processing - every 4 hours
-    this.schedule('youtube-batch', '0 */4 * * *', () =>
+    // YouTube batch processing - configurable schedule
+    this.schedule('youtube-batch', config.cron.youtubeBatchSchedule, () =>
       youtubeBatchProcessor.processPendingStreams()
     );
 

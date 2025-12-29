@@ -83,6 +83,7 @@ services:
       - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
       - YOUTUBE_ACCESS_TOKEN=placeholder-access-token
       - YOUTUBE_REFRESH_TOKEN=placeholder-refresh-token
+      - YOUTUBE_BATCH_SCHEDULE=*/10 * * * * *
     ports:
       - '9090:9090' # Prometheus metrics
     labels:
