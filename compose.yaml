@@ -23,6 +23,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     labels:
       - 'traefik.enable=false'
 
@@ -37,7 +43,8 @@ services:
       - 'traefik.http.routers.mongo-express.rule=Host(`db.traefik.me`)'
       - 'traefik.http.services.mongo-express.loadbalancer.server.port=8081'
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   mailhog:
     image: mailhog/mailhog
@@ -61,13 +68,16 @@ services:
       - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'
       - 'traefik.http.services.api.loadbalancer.server.port=3000'
     depends_on:
-      - mongodb
-      - mailhog
+      mongodb:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
     develop:
       watch:
         - action: sync
           path: ./api/src
           target: /app/src
+          initial_sync: true
         - action: rebuild
           path: ./api/package.json
 
@@ -86,9 +96,11 @@ services:
         - action: sync
           path: ./dashboard/src
           target: /app/src
+          initial_sync: true
         - action: sync
           path: ./dashboard/public
           target: /app/public
+          initial_sync: true
         - action: rebuild
           path: ./dashboard/package.json
 
@@ -107,9 +119,11 @@ services:
         - action: sync
           path: ./access/src
           target: /app/src
+          initial_sync: true
         - action: sync
           path: ./access/public
           target: /app/public
+          initial_sync: true
         - action: rebuild
           path: ./access/package.json
 
@@ -121,6 +135,18 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.landing.rule=Host(`ldschurch.traefik.me`)'
       - 'traefik.http.services.landing.loadbalancer.server.port=5173'
+    develop:
+      watch:
+        - action: sync
+          path: ./landing/src
+          target: /app/src
+          initial_sync: true
+        - action: sync
+          path: ./landing/public
+          target: /app/public
+          initial_sync: true
+        - action: rebuild
+          path: ./landing/package.json
 
 volumes:
   mongodb_data:

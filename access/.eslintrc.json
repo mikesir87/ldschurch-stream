@@ -14,7 +14,8 @@
   "plugins": ["react", "react-hooks"],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "warn"
+    "react/prop-types": "warn",
+    "react/no-unescaped-entities": "off"
   },
   "settings": {
     "react": {
