@@ -8,6 +8,7 @@ router.use(authenticateToken);
 router.get('/:unitId/streams', authorizeUnit, unitsController.getStreams);
 router.post('/:unitId/streams', authorizeUnit, unitsController.createStream);
 router.put('/:unitId/streams/:streamId', authorizeUnit, unitsController.updateStream);
+router.delete('/:unitId/streams/:streamId', authorizeUnit, unitsController.deleteStream);
 router.get('/:unitId/attendance', authorizeUnit, unitsController.getAttendance);
 
 module.exports = router;

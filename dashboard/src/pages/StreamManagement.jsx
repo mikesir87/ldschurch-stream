@@ -5,6 +5,8 @@ import { useStream } from '../context/StreamContext';
 const StreamManagement = () => {
   const { streams, loading, error, createStream, deleteStream } = useStream();
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [streamToDelete, setStreamToDelete] = useState(null);
   const [formData, setFormData] = useState({
     scheduledDate: '',
     scheduledTime: '10:00 AM',
@@ -29,6 +31,19 @@ const StreamManagement = () => {
       // Error is handled by context
     } finally {
       setSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteStream = stream => {
+    setStreamToDelete(stream);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (streamToDelete) {
+      await deleteStream(streamToDelete._id);
+      setShowDeleteModal(false);
+      setStreamToDelete(null);
     }
   };
 
@@ -94,7 +109,11 @@ const StreamManagement = () => {
                   </p>
                 )
               )}
-              <Button variant="danger" onClick={() => deleteStream(stream._id)} disabled={loading}>
+              <Button
+                variant="danger"
+                onClick={() => handleDeleteStream(stream)}
+                disabled={loading}
+              >
                 Cancel {stream.isSpecialEvent ? 'Event' : 'Stream'}
               </Button>
             </Card.Body>
@@ -169,6 +188,31 @@ const StreamManagement = () => {
             </Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Cancellation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {streamToDelete && (
+            <p>
+              Are you sure you want to cancel this{' '}
+              {streamToDelete.isSpecialEvent ? 'event' : 'stream'} scheduled for{' '}
+              {new Date(streamToDelete.scheduledDate).toLocaleDateString()} at{' '}
+              {streamToDelete.scheduledTime}?
+            </p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Keep Event
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Cancel {streamToDelete?.isSpecialEvent ? 'Event' : 'Stream'}
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

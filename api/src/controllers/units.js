@@ -104,9 +104,29 @@ const getAttendance = async (req, res, next) => {
   }
 };
 
+const deleteStream = async (req, res, next) => {
+  try {
+    const { unitId, streamId } = req.params;
+
+    const stream = await StreamEvent.findOne({ _id: streamId, unitId });
+    if (!stream) {
+      throw new AppError('Stream not found', 404, 'STREAM_NOT_FOUND');
+    }
+
+    // Update status to cancelled instead of deleting
+    stream.status = 'cancelled';
+    await stream.save();
+
+    res.json({ message: 'Stream cancelled successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getStreams,
   createStream,
   updateStream,
+  deleteStream,
   getAttendance,
 };
