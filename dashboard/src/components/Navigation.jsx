@@ -27,6 +27,11 @@ const Navigation = () => {
             <LinkContainer to="/settings">
               <Nav.Link>Unit Settings</Nav.Link>
             </LinkContainer>
+            {user?.role === 'global_admin' && (
+              <LinkContainer to="/admin">
+                <Nav.Link>Admin</Nav.Link>
+              </LinkContainer>
+            )}
           </Nav>
           <Nav>
             {units.length > 1 ? (

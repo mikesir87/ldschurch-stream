@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const logger = require('../utils/logger');
 const config = require('../config');
 const youtubeBatchProcessor = require('./youtubeBatchProcessor');
+const reportGenerator = require('./reportGenerator');
 
 class JobScheduler {
   constructor() {
@@ -13,6 +14,9 @@ class JobScheduler {
     this.schedule('youtube-batch', config.cron.youtubeBatchSchedule, () =>
       youtubeBatchProcessor.processPendingStreams()
     );
+
+    // Weekly reports - Monday morning
+    this.schedule('weekly-reports', config.cron.reportSchedule, () => reportGenerator.run());
 
     logger.info('Job scheduler started');
   }

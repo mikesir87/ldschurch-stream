@@ -5,7 +5,7 @@ const { recordEmailSent } = require('../utils/metrics');
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       host: config.email.host,
       port: config.email.port,
       secure: config.email.secure,
@@ -47,6 +47,33 @@ class EmailService {
   }
 
   generateReportHtml(report) {
+    const analysisHtml = report.analysis
+      ? `
+      <h3>Attendance Analysis</h3>
+      ${
+        report.analysis.newThisWeek.length > 0
+          ? `
+        <p><strong>New This Week:</strong> ${report.analysis.newThisWeek.join(', ')}</p>
+      `
+          : ''
+      }
+      ${
+        report.analysis.regularStreamers.length > 0
+          ? `
+        <p><strong>Regular Streamers:</strong> ${report.analysis.regularStreamers.join(', ')}</p>
+      `
+          : ''
+      }
+      ${
+        report.analysis.missingRegulars.length > 0
+          ? `
+        <p><strong>Missing Regulars:</strong> ${report.analysis.missingRegulars.join(', ')}</p>
+      `
+          : ''
+      }
+    `
+      : '';
+
     return `
       <h2>Weekly Attendance Report</h2>
       <p><strong>Unit:</strong> ${report.unit}</p>
@@ -58,6 +85,8 @@ class EmailService {
       <ul>
         ${report.attendeeList.map(a => `<li>${a.name} (${a.count})</li>`).join('')}
       </ul>
+      
+      ${analysisHtml}
     `;
   }
 }

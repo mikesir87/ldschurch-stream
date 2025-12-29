@@ -35,6 +35,11 @@ const streamEventSchema = new mongoose.Schema(
       default: false,
     },
     specialEventMessage: String,
+    reportSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

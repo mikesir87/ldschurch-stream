@@ -10,6 +10,7 @@ import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
 import UnitSettings from './pages/UnitSettings';
+import Admin from './pages/Admin';
 import Login from './pages/Login';
 
 function AppContent() {
@@ -31,6 +32,7 @@ function AppContent() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<UnitSettings />} />
+              {user.role === 'global_admin' && <Route path="/admin" element={<Admin />} />}
             </Routes>
           </Container>
         </Router>

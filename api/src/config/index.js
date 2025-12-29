@@ -61,5 +61,7 @@ module.exports = {
 
   cron: {
     youtubeBatchSchedule: process.env.YOUTUBE_BATCH_SCHEDULE || '0 */4 * * *',
+    reportSchedule: process.env.REPORT_CRON_SCHEDULE || '0 6 * * 1', // Monday 6 AM
+    timezone: process.env.TIMEZONE || 'America/New_York',
   },
 };

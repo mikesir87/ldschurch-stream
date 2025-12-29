@@ -11,5 +11,7 @@ router.post('/units', adminController.createUnit);
 router.post('/units/:unitId/invite', adminController.createInviteToken);
 router.get('/users', adminController.getUsers);
 router.post('/youtube/batch', adminController.triggerYoutubeBatch);
+router.post('/reports/generate', adminController.triggerReportGeneration);
+router.post('/test/setup-report-data', adminController.setupTestReportData);
 
 module.exports = router;

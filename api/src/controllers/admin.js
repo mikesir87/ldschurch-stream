@@ -4,6 +4,8 @@ const InviteToken = require('../models/InviteToken');
 const { v4: uuidv4 } = require('uuid');
 const { AppError } = require('../middleware/errorHandler');
 const youtubeBatchProcessor = require('../jobs/youtubeBatchProcessor');
+const reportGenerator = require('../jobs/reportGenerator');
+const { setupTestData } = require('../scripts/setupTestReportData');
 
 const getUnits = async (req, res, next) => {
   try {
@@ -80,10 +82,30 @@ const triggerYoutubeBatch = async (req, res, next) => {
   }
 };
 
+const triggerReportGeneration = async (req, res, next) => {
+  try {
+    await reportGenerator.run();
+    res.json({ message: 'Weekly report generation completed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const setupTestReportData = async (req, res, next) => {
+  try {
+    await setupTestData();
+    res.json({ message: 'Test report data setup completed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUnits,
   createUnit,
   createInviteToken,
   getUsers,
   triggerYoutubeBatch,
+  triggerReportGeneration,
+  setupTestReportData,
 };
