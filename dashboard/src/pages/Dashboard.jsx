@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Row, Col, Card, Button, Form, Modal, Alert, Spinner, Container } from 'react-bootstrap';
 import { useStream } from '../context/StreamContext';
-import { useAuth } from '../context/AuthContext';
+import { useUnit } from '../context/UnitContext';
 import { useConfig } from '../context/ConfigContext';
 
 const Dashboard = () => {
   const { streams, loading, error, createStream, deleteStream } = useStream();
-  const { user } = useAuth();
+  const { selectedUnit } = useUnit();
   const { config } = useConfig();
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -63,10 +63,10 @@ const Dashboard = () => {
   };
 
   const copyAccessUrl = async () => {
-    if (!config || !user?.units?.[0]) return;
+    if (!config || !selectedUnit) return;
 
     // Get the unit subdomain - check if it's an object with subdomain property or just an ID
-    const unit = user.units[0];
+    const unit = selectedUnit;
     const unitSubdomain =
       unit?.subdomain || unit?.name?.toLowerCase().replace(/\s+/g, '-') || 'your-unit';
 
@@ -236,9 +236,9 @@ const Dashboard = () => {
               <div className="stats-label mb-2">Stream Access URL</div>
               <div className="d-flex align-items-center gap-2">
                 <small className="text-muted flex-grow-1" style={{ fontSize: '0.75rem' }}>
-                  {config && user?.units?.[0]
+                  {config && selectedUnit
                     ? (() => {
-                        const unit = user.units[0];
+                        const unit = selectedUnit;
                         const unitSubdomain =
                           unit?.subdomain ||
                           unit?.name?.toLowerCase().replace(/\s+/g, '-') ||

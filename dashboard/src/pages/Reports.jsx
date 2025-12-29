@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Alert } from 'react-bootstrap';
-import { useAuth } from '../context/AuthContext';
+import { useUnit } from '../context/UnitContext';
 import { streamService } from '../services/api';
 import AttendanceTrends from '../components/AttendanceTrends';
 import AttendanceSection from '../components/AttendanceSection';
 
 const Reports = () => {
-  const { user } = useAuth();
+  const { selectedUnit } = useUnit();
   const [streams, setStreams] = useState([]);
   const [trendsData, setTrendsData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStaticData = async () => {
-      if (!user?.units?.[0]) return;
+      if (!selectedUnit) return;
 
       try {
-        const unitId = typeof user.units[0] === 'string' ? user.units[0] : user.units[0]._id;
+        const unitId = typeof selectedUnit === 'string' ? selectedUnit : selectedUnit._id;
 
         const [trendsResponse, streamsResponse] = await Promise.all([
           streamService.getAttendanceTrends(unitId),
@@ -31,7 +31,7 @@ const Reports = () => {
     };
 
     fetchStaticData();
-  }, [user]);
+  }, [selectedUnit]);
 
   if (error) {
     return <Alert variant="danger">Error: {error}</Alert>;

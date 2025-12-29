@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Spinner, Alert } from 'react-bootstrap';
-import { useAuth } from '../context/AuthContext';
+import { useUnit } from '../context/UnitContext';
 import { streamService } from '../services/api';
 import AttendanceFilters from './AttendanceFilters';
 import AttendanceTable from './AttendanceTable';
 
 const AttendanceSection = ({ streams }) => {
-  const { user } = useAuth();
+  const { selectedUnit } = useUnit();
   const [allAttendance, setAllAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,11 +15,11 @@ const AttendanceSection = ({ streams }) => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      if (!user?.units?.[0]) return;
+      if (!selectedUnit) return;
 
       try {
         setLoading(true);
-        const unitId = typeof user.units[0] === 'string' ? user.units[0] : user.units[0]._id;
+        const unitId = typeof selectedUnit === 'string' ? selectedUnit : selectedUnit._id;
 
         const attendanceResponse = await streamService.getAttendance(unitId);
         setAllAttendance(attendanceResponse.data);
@@ -31,7 +31,7 @@ const AttendanceSection = ({ streams }) => {
     };
 
     fetchAttendance();
-  }, [user]);
+  }, [selectedUnit]);
 
   if (error) {
     return <Alert variant="danger">Error: {error}</Alert>;
