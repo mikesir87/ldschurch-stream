@@ -510,6 +510,39 @@ const requireGlobalAdmin = (req, res, next) => { ... }
 - Use Google APIs Node.js client
 - OAuth 2.0 service account for server-to-server auth
 - Single YouTube channel managed by the application
+- **Development Mock Server**: Standalone Express server that mimics YouTube API responses
+
+### Development vs Production
+
+#### Development Mode
+
+- Uses YouTube Mock Server (`youtube-mock` service) for local development
+- Automatically detected when `YOUTUBE_ACCESS_TOKEN=placeholder-access-token`
+- Mock server provides realistic API responses without quota consumption
+- Available at http://youtube-mock.traefik.me for debugging
+
+#### Production Mode
+
+- Uses real YouTube Data API v3
+- Requires valid OAuth 2.0 credentials and access tokens
+- Subject to YouTube API quotas and rate limits
+
+### Mock Server Architecture
+
+```javascript
+// youtube-mock/server.js - Express server providing YouTube API endpoints
+app.post('/youtube/v3/liveBroadcasts', (req, res) => {
+  // Creates mock broadcast with realistic response structure
+});
+
+app.post('/youtube/v3/liveStreams', (req, res) => {
+  // Creates mock stream with generated stream keys
+});
+
+app.post('/youtube/v3/liveBroadcasts/bind', (req, res) => {
+  // Binds broadcast to stream for complete workflow
+});
+```
 
 ### Stream Management
 
@@ -525,6 +558,7 @@ const requireGlobalAdmin = (req, res, next) => { ... }
 - **Batch Processing**: Processes up to 50 pending streams per batch to manage quota usage
 - **Rate Limiting**: Additional per-minute (500 units) and burst limits apply
 - **Manual Trigger**: Admin endpoint available for emergency processing
+- **Development**: No quota limits when using mock server
 
 ### Error Handling
 
@@ -532,6 +566,7 @@ const requireGlobalAdmin = (req, res, next) => { ... }
 - Fallback messaging when YouTube API is unavailable
 - Failed YouTube creation marks streams as `cancelled` with error message
 - Logging for all YouTube API interactions
+- Mock server provides consistent responses for testing error scenarios
 
 ## Email System
 
@@ -1010,45 +1045,158 @@ INVITE_TOKEN_EXPIRY_HOURS=72
 ```yaml
 # compose.yaml
 services:
+  traefik:
+    image: traefik:3.6.5
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+    ports:
+      - '80:80'
+      - '8080:8080' # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.traefik.me`)'
+      - 'traefik.http.services.traefik.loadbalancer.server.port=8080'
+
+  mongodb:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - 'traefik.enable=false'
+
+  mailhog:
+    image: mailhog/mailhog
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+
+  youtube-mock:
+    build: ./youtube-mock
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.youtube-mock.rule=Host(`youtube-mock.traefik.me`)'
+      - 'traefik.http.services.youtube-mock.loadbalancer.server.port=3001'
+    develop:
+      watch:
+        - action: sync
+          path: ./youtube-mock
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./youtube-mock/package.json
+
   api:
-    build: ./api
+    build:
+      context: ./api
+      target: dev
     environment:
       - NODE_ENV=development
-      - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
-      - JWT_REFRESH_SECRET_FILE=/run/secrets/jwt_refresh_secret
-      - YOUTUBE_API_KEY_FILE=/run/secrets/youtube_api_key
+      - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream?authSource=admin
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
-      - FROM_EMAIL=noreply@ldschurch.stream
-    secrets:
-      - jwt_secret
-      - jwt_refresh_secret
-      - youtube_api_key
-      - youtube_client_id
-      - youtube_client_secret
-    volumes:
-      - ./config/development.env:/app/.env:ro
+      - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
+      - YOUTUBE_CLIENT_ID=placeholder-client-id
+      - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
+      - YOUTUBE_ACCESS_TOKEN=placeholder-access-token
+      - YOUTUBE_REFRESH_TOKEN=placeholder-refresh-token
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'
       - 'traefik.http.services.api.loadbalancer.server.port=3000'
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+      youtube-mock:
+        condition: service_started
+    develop:
+      watch:
+        - action: sync
+          path: ./api/src
+          target: /app/src
+        - action: rebuild
+          path: ./api/package.json
 
-secrets:
-  jwt_secret:
-    file: ./secrets/jwt_secret.txt
-  jwt_refresh_secret:
-    file: ./secrets/jwt_refresh_secret.txt
-  youtube_api_key:
-    file: ./secrets/youtube_api_key.txt
-  youtube_client_id:
-    file: ./secrets/youtube_client_id.txt
-  youtube_client_secret:
-    file: ./secrets/youtube_client_secret.txt
-  smtp_user:
-    file: ./secrets/smtp_user.txt
-  smtp_pass:
-    file: ./secrets/smtp_pass.txt
+  dashboard:
+    build:
+      context: ./dashboard
+      target: dev
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)'
+      - 'traefik.http.services.dashboard.loadbalancer.server.port=5173'
+    depends_on:
+      - api
+    develop:
+      watch:
+        - action: sync
+          path: ./dashboard/src
+          target: /app/src
+        - action: sync
+          path: ./dashboard/public
+          target: /app/public
+        - action: rebuild
+          path: ./dashboard/package.json
+
+  access:
+    build:
+      context: ./access
+      target: dev
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.access.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.traefik.me`)'
+      - 'traefik.http.services.access.loadbalancer.server.port=5173'
+    depends_on:
+      - api
+    develop:
+      watch:
+        - action: sync
+          path: ./access/src
+          target: /app/src
+        - action: sync
+          path: ./access/public
+          target: /app/public
+        - action: rebuild
+          path: ./access/package.json
+
+  landing:
+    build:
+      context: ./landing
+      target: dev
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.landing.rule=Host(`ldschurch.traefik.me`)'
+      - 'traefik.http.services.landing.loadbalancer.server.port=5173'
+    develop:
+      watch:
+        - action: sync
+          path: ./landing/src
+          target: /app/src
+        - action: sync
+          path: ./landing/public
+          target: /app/public
+        - action: rebuild
+          path: ./landing/package.json
+
+volumes:
+  mongodb_data:
 ```
 
 ### Configuration Loading Pattern
@@ -1154,9 +1302,9 @@ secrets/
 
 - **Docker Compose** services:
   - MongoDB for data storage
-  - Mongo Express for database visualization (http://localhost:8081)
-  - Keycloak for OAuth/OIDC authentication testing (http://localhost:8080)
-  - MailHog for email testing and visualization (http://localhost:8025)
+  - Mongo Express for database visualization (http://db.traefik.me)
+  - YouTube Mock Server for development API testing (http://youtube-mock.traefik.me)
+  - MailHog for email testing and visualization (http://mail.traefik.me)
 - Environment variables for all configuration
 - Separate .env files for different environments
 - Hot reload for both API and frontend development
@@ -1188,6 +1336,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     labels:
       - 'traefik.enable=false'
 
@@ -1201,17 +1357,9 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.mongo-express.rule=Host(`db.traefik.me`)'
       - 'traefik.http.services.mongo-express.loadbalancer.server.port=8081'
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    command: start-dev
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.keycloak.rule=Host(`auth.traefik.me`)'
-      - 'traefik.http.services.keycloak.loadbalancer.server.port=8080'
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   mailhog:
     image: mailhog/mailhog
@@ -1219,6 +1367,22 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
       - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+
+  youtube-mock:
+    build: ./youtube-mock
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.youtube-mock.rule=Host(`youtube-mock.traefik.me`)'
+      - 'traefik.http.services.youtube-mock.loadbalancer.server.port=3001'
+    develop:
+      watch:
+        - action: sync
+          path: ./youtube-mock
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./youtube-mock/package.json
 
   # Application services (when running locally)
   api:
@@ -1271,8 +1435,8 @@ services:
 - **Landing Page**: http://ldschurch.traefik.me
 - **Stream Dashboard**: http://dashboard.traefik.me
 - **Database Admin**: http://db.traefik.me
-- **Auth Provider**: http://auth.traefik.me
 - **Email Testing**: http://mail.traefik.me
+- **YouTube Mock Server**: http://youtube-mock.traefik.me
 - **Stream Access Examples**:
   - http://blacksburg-va.traefik.me
   - http://provo-ut.traefik.me

@@ -8,6 +8,7 @@ ldschurch-stream/
 ├── dashboard/                    # Stream specialist dashboard (React)
 ├── access/                       # Stream attendee access app (React)
 ├── landing/                      # Marketing/landing page (React)
+├── youtube-mock/                 # YouTube API mock server for development
 ├── k8s/                         # Kubernetes deployment manifests
 ├── monitoring/                   # Observability configuration
 ├── secrets/                      # Local development secrets
@@ -166,6 +167,43 @@ landing/
 ├── package.json              # Dependencies
 └── .env.example              # Environment template
 ```
+
+### YouTube Mock Server Structure
+
+The `youtube-mock/` service provides a development-only mock of the YouTube Data API v3:
+
+```
+youtube-mock/
+├── server.js                  # Express server with YouTube API endpoints
+├── package.json              # Dependencies (express, uuid)
+├── Dockerfile                 # Container build for development
+└── .eslintrc.json            # ESLint configuration
+```
+
+#### Mock Server Endpoints
+
+```javascript
+// YouTube Live Broadcasts API
+POST /youtube/v3/liveBroadcasts    # Create live broadcast
+DELETE /youtube/v3/liveBroadcasts  # Delete live broadcast
+
+// YouTube Live Streams API
+POST /youtube/v3/liveStreams       # Create live stream
+
+// YouTube Live Broadcasts Bind API
+POST /youtube/v3/liveBroadcasts/bind # Bind broadcast to stream
+
+// Health check
+GET /health                        # Server status and metrics
+```
+
+#### Development Integration
+
+- Automatically used when `YOUTUBE_ACCESS_TOKEN=placeholder-access-token`
+- Provides realistic API responses without quota consumption
+- Generates unique mock IDs and stream keys for testing
+- Available at http://youtube-mock.traefik.me for debugging
+- Supports complete YouTube Live streaming workflow simulation
 
 ```
 dashboard/ (or access/)
