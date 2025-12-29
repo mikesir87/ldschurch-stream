@@ -371,6 +371,7 @@ spec:
   status: String, // "pending" | "scheduled" | "live" | "completed" | "cancelled"
   isSpecialEvent: Boolean, // true for non-streaming events
   specialEventMessage: String, // message for special events
+  reportSent: Boolean, // tracks if weekly report was sent (for idempotency)
   createdAt: Date,
   updatedAt: Date
 }
@@ -451,6 +452,9 @@ updatedAt: Date
 - `POST /api/admin/units` - Create new unit
 - `POST /api/admin/units/:id/invite` - Generate invite token
 - `GET /api/admin/users` - List all users
+- `POST /api/admin/youtube/batch` - Manually trigger YouTube batch processing
+- `POST /api/admin/reports/generate` - Manually trigger report generation
+- `POST /api/admin/test/setup-report-data` - Setup test data for email testing
 
 ### Stream Management (Specialists)
 

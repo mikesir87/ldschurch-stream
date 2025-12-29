@@ -58,8 +58,9 @@ api/
 │   │   ├── units.js           # Unit routes
 │   │   └── public.js          # Public routes
 │   ├── jobs/                   # Scheduled tasks
-│   │   ├── reportGenerator.js # Weekly report generation
-│   │   └── cleanup.js         # YouTube cleanup tasks
+│   │   ├── index.js           # Job scheduler setup
+│   │   ├── reportGenerator.js # Weekly report generation and cleanup
+│   │   └── youtubeBatchProcessor.js # YouTube event creation batch processing
 │   └── app.js                  # Express app setup
 ├── tests/                      # Test files
 │   ├── unit/                  # Unit tests
@@ -870,10 +871,8 @@ console.log(`Created migration: ${filename}`);
 ```
 api/src/jobs/
 ├── index.js                   # Job scheduler setup
-├── schedules.js              # Cron schedule definitions
-├── reportGenerator.js        # Monday morning attendance reports
-├── youtubeCleanup.js        # 24-hour stream deletion
-└── healthCheck.js           # System health monitoring
+├── reportGenerator.js        # Monday morning attendance reports and cleanup
+└── youtubeBatchProcessor.js  # YouTube event creation (every 4 hours)
 ```
 
 ### Job Scheduler Setup
@@ -882,10 +881,9 @@ api/src/jobs/
 // jobs/index.js
 const cron = require('node-cron');
 const logger = require('../utils/logger');
-const { SCHEDULES } = require('./schedules');
+const config = require('../config');
+const youtubeBatchProcessor = require('./youtubeBatchProcessor');
 const reportGenerator = require('./reportGenerator');
-const youtubeCleanup = require('./youtubeCleanup');
-const healthCheck = require('./healthCheck');
 
 class JobScheduler {
   constructor() {
@@ -893,14 +891,13 @@ class JobScheduler {
   }
 
   start() {
-    // Monday morning reports (6 AM)
-    this.schedule('reports', SCHEDULES.WEEKLY_REPORTS, reportGenerator.run);
+    // YouTube batch processing - configurable schedule
+    this.schedule('youtube-batch', config.cron.youtubeBatchSchedule, () =>
+      youtubeBatchProcessor.processPendingStreams()
+    );
 
-    // YouTube cleanup (7 AM Monday)
-    this.schedule('cleanup', SCHEDULES.YOUTUBE_CLEANUP, youtubeCleanup.run);
-
-    // Health check (every 5 minutes)
-    this.schedule('health', SCHEDULES.HEALTH_CHECK, healthCheck.run);
+    // Weekly reports - Monday morning
+    this.schedule('weekly-reports', config.cron.reportSchedule, () => reportGenerator.run());
 
     logger.info('Job scheduler started');
   }
@@ -935,23 +932,16 @@ class JobScheduler {
 module.exports = { JobScheduler };
 ```
 
-### Schedule Definitions
+### Schedule Configuration
 
 ```javascript
-// jobs/schedules.js
+// config/index.js
 module.exports = {
-  SCHEDULES: {
-    // Monday 6 AM (reports sent before leadership meetings)
-    WEEKLY_REPORTS: '0 6 * * 1',
-
-    // Monday 7 AM (cleanup after reports are sent)
-    YOUTUBE_CLEANUP: '0 7 * * 1',
-
-    // Every 5 minutes (system health)
-    HEALTH_CHECK: '*/5 * * * *',
-
-    // Daily at midnight (general maintenance)
-    DAILY_MAINTENANCE: '0 0 * * *',
+  // ... other config
+  cron: {
+    youtubeBatchSchedule: process.env.YOUTUBE_BATCH_SCHEDULE || '0 */4 * * *', // Every 4 hours
+    reportSchedule: process.env.REPORT_CRON_SCHEDULE || '0 6 * * 1', // Monday 6 AM
+    timezone: process.env.TIMEZONE || 'America/New_York',
   },
 };
 ```
@@ -1064,56 +1054,50 @@ class ReportGenerator {
 module.exports = new ReportGenerator();
 ```
 
-### YouTube Cleanup Job
+### YouTube Batch Processing Job
 
 ```javascript
-// jobs/youtubeCleanup.js
+// jobs/youtubeBatchProcessor.js
 const StreamEvent = require('../models/StreamEvent');
 const youtubeService = require('../services/youtubeService');
 const logger = require('../utils/logger');
 
-class YouTubeCleanup {
-  async run() {
-    logger.info('Starting YouTube cleanup job');
-
-    // Find streams completed more than 24 hours ago
-    const cutoffTime = new Date();
-    cutoffTime.setHours(cutoffTime.getHours() - 24);
-
-    const streamsToCleanup = await StreamEvent.find({
-      status: 'completed',
-      updatedAt: { $lt: cutoffTime },
-      youtubeEventId: { $exists: true, $ne: null },
+class YouTubeBatchProcessor {
+  async processPendingStreams() {
+    const correlationId = require('uuid').v4();
+    const jobLogger = logger.child({
+      correlationId,
+      job: 'youtube-batch-processor',
     });
 
-    for (const stream of streamsToCleanup) {
-      await this.cleanupStream(stream);
+    jobLogger.info('Starting YouTube batch processing');
+
+    // Find pending streams scheduled within next 7 days
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    const pendingStreams = await StreamEvent.find({
+      status: 'pending',
+      scheduledDateTime: { $lte: nextWeek },
+    }).populate('unitId');
+
+    if (pendingStreams.length === 0) {
+      jobLogger.info('No pending streams to process');
+      return;
     }
 
-    logger.info(`Cleaned up ${streamsToCleanup.length} YouTube streams`);
-  }
+    // Process up to 50 streams per batch to manage quota
+    const streamsToProcess = pendingStreams.slice(0, 50);
 
-  async cleanupStream(streamEvent) {
-    try {
-      // Delete YouTube Live event and recording
-      await youtubeService.deleteEvent(streamEvent.youtubeEventId);
-
-      // Clear YouTube data from database record
-      streamEvent.youtubeEventId = null;
-      streamEvent.youtubeStreamUrl = null;
-      await streamEvent.save();
-
-      logger.info(`Cleaned up YouTube event for stream: ${streamEvent._id}`);
-    } catch (error) {
-      logger.error(`Failed to cleanup YouTube event: ${streamEvent.youtubeEventId}`, {
-        error: error.message,
-        streamId: streamEvent._id,
-      });
+    for (const stream of streamsToProcess) {
+      await this.processStream(stream, jobLogger);
     }
+
+    jobLogger.info(`Processed ${streamsToProcess.length} streams`);
   }
 }
 
-module.exports = new YouTubeCleanup();
+module.exports = new YouTubeBatchProcessor();
 ```
 
 ### Application Integration
@@ -1139,6 +1123,60 @@ async function startApp() {
   // Start Express server
   app.listen(config.server.port);
 }
+```
+
+### Admin Interface for Job Management
+
+Global admins can manually trigger jobs through the admin interface:
+
+#### Admin Routes
+
+```javascript
+// routes/admin.js
+router.post('/youtube/batch', adminController.triggerYoutubeBatch);
+router.post('/reports/generate', adminController.triggerReportGeneration);
+router.post('/test/setup-report-data', adminController.setupTestReportData);
+```
+
+#### Admin Dashboard Component
+
+```javascript
+// dashboard/src/pages/Admin.jsx
+const Admin = () => {
+  const triggerJob = async (jobType, endpoint, description) => {
+    // Trigger job via API call
+    // Show loading states and success/error messages
+  };
+
+  return (
+    <div>
+      <h2>System Administration</h2>
+
+      {/* YouTube Batch Processing Card */}
+      <Card>
+        <Card.Header>YouTube Batch Processing</Card.Header>
+        <Card.Body>
+          <Button onClick={() => triggerJob('youtube', '/api/admin/youtube/batch')}>
+            Trigger YouTube Batch
+          </Button>
+        </Card.Body>
+      </Card>
+
+      {/* Weekly Reports Card */}
+      <Card>
+        <Card.Header>Weekly Reports</Card.Header>
+        <Card.Body>
+          <Button onClick={() => triggerJob('reports', '/api/admin/reports/generate')}>
+            Generate Reports
+          </Button>
+          <Button onClick={() => triggerJob('testData', '/api/admin/test/setup-report-data')}>
+            Setup Test Data
+          </Button>
+        </Card.Body>
+      </Card>
+    </div>
+  );
+};
 ```
 
 ### Environment Configuration
