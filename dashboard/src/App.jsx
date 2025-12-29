@@ -58,14 +58,22 @@ function ConfigInitializer() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error loading configuration: {error.message}</div>;
 
-  // Initialize API with config
-  initializeApi(config);
-
   return (
     <AuthProvider>
-      <AppContent />
+      <AuthInitializer config={config} />
     </AuthProvider>
   );
+}
+
+function AuthInitializer({ config }) {
+  const auth = useAuth();
+
+  React.useEffect(() => {
+    // Initialize API with config and auth context
+    initializeApi(config, auth);
+  }, [config, auth]);
+
+  return <AppContent />;
 }
 
 export default App;
