@@ -33,6 +33,7 @@ const AttendanceTrends = ({ trendsData }) => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
@@ -52,7 +53,11 @@ const AttendanceTrends = ({ trendsData }) => {
     },
   };
 
-  return <Line data={data} options={options} />;
+  return (
+    <div style={{ height: '400px' }}>
+      <Line data={data} options={options} />
+    </div>
+  );
 };
 
 export default AttendanceTrends;
