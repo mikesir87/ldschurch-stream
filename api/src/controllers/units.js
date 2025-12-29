@@ -13,7 +13,7 @@ const getStreams = async (req, res, next) => {
       query.status = status;
     }
 
-    const streams = await StreamEvent.find(query).sort({ scheduledDate: 1 }).limit(50);
+    const streams = await StreamEvent.find(query).sort({ scheduledDateTime: 1 }).limit(50);
 
     res.json(streams);
   } catch (error) {
@@ -24,17 +24,27 @@ const getStreams = async (req, res, next) => {
 const createStream = async (req, res, next) => {
   try {
     const { unitId } = req.params;
-    const { scheduledDate, scheduledTime, isSpecialEvent, specialEventMessage } = req.body;
+    const {
+      scheduledDate,
+      scheduledTime,
+      timezone = 'America/New_York',
+      isSpecialEvent,
+      specialEventMessage,
+    } = req.body;
 
+    // Get unit for stream key generation
     const unit = await Unit.findById(unitId);
     if (!unit) {
       throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
     }
 
+    // Combine date and time with timezone
+    const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}:00`);
+
     const streamData = {
       unitId,
-      scheduledDate: new Date(scheduledDate),
-      scheduledTime,
+      scheduledDateTime,
+      timezone,
       isSpecialEvent: isSpecialEvent || false,
     };
 
@@ -81,7 +91,7 @@ const getAttendance = async (req, res, next) => {
 
     const streams = await StreamEvent.find({
       unitId,
-      scheduledDate: {
+      scheduledDateTime: {
         $gte: startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         $lte: endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Include next year
       },

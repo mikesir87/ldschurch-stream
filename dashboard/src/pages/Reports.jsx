@@ -90,8 +90,14 @@ const Reports = () => {
               ) : (
                 filteredAttendance.map(record => (
                   <tr key={record._id}>
-                    <td>{new Date(record.streamEventId.scheduledDate).toLocaleDateString()}</td>
-                    <td>{record.streamEventId.scheduledTime}</td>
+                    <td>{new Date(record.streamEventId.scheduledDateTime).toLocaleDateString()}</td>
+                    <td>
+                      {new Date(record.streamEventId.scheduledDateTime).toLocaleTimeString([], {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </td>
                     <td>{record.attendeeName}</td>
                     <td>{record.attendeeCount}</td>
                     <td>{new Date(record.submittedAt).toLocaleString()}</td>

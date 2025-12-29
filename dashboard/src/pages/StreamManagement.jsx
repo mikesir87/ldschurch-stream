@@ -10,6 +10,7 @@ const StreamManagement = () => {
   const [formData, setFormData] = useState({
     scheduledDate: '',
     scheduledTime: '10:00 AM',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     isSpecialEvent: false,
     specialEventMessage: '',
   });
@@ -23,6 +24,7 @@ const StreamManagement = () => {
       setFormData({
         scheduledDate: '',
         scheduledTime: '10:00 AM',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         isSpecialEvent: false,
         specialEventMessage: '',
       });
@@ -86,7 +88,13 @@ const StreamManagement = () => {
           <Card key={stream._id} className="mb-3">
             <Card.Body>
               <Card.Title>
-                {new Date(stream.scheduledDate).toLocaleDateString()} at {stream.scheduledTime}
+                {new Date(stream.scheduledDateTime).toLocaleDateString()} at{' '}
+                {new Date(stream.scheduledDateTime).toLocaleTimeString([], {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                })}{' '}
+                ({stream.timezone?.replace('America/', '').replace('_', ' ') || 'UTC'})
                 {stream.isSpecialEvent && (
                   <span className="badge bg-warning ms-2">Special Event</span>
                 )}
@@ -147,6 +155,34 @@ const StreamManagement = () => {
                 placeholder="e.g., 10:00 AM"
                 required
               />
+            </Form.Group>
+            <Form.Group controlId="timezone" className="mb-3">
+              <Form.Label>Timezone</Form.Label>
+              <Form.Select
+                name="timezone"
+                value={formData.timezone}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="America/New_York">Eastern Time (New York)</option>
+                <option value="America/Chicago">Central Time (Chicago)</option>
+                <option value="America/Denver">Mountain Time (Denver)</option>
+                <option value="America/Phoenix">Arizona Time (Phoenix)</option>
+                <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
+                <option value="America/Anchorage">Alaska Time (Anchorage)</option>
+                <option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option>
+                {![
+                  'America/New_York',
+                  'America/Chicago',
+                  'America/Denver',
+                  'America/Phoenix',
+                  'America/Los_Angeles',
+                  'America/Anchorage',
+                  'Pacific/Honolulu',
+                ].includes(formData.timezone) && (
+                  <option value={formData.timezone}>{formData.timezone} (Detected)</option>
+                )}
+              </Form.Select>
             </Form.Group>
             <Form.Group controlId="isSpecialEvent" className="mb-3">
               <Form.Check

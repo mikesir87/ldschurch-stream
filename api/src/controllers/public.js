@@ -12,20 +12,20 @@ const getCurrentStream = async (req, res, next) => {
       throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     const currentStream = await StreamEvent.findOne({
       unitId: unit._id,
-      scheduledDate: { $gte: today },
-      status: { $in: ['scheduled', 'live'] }
-    }).sort({ scheduledDate: 1 });
+      scheduledDateTime: { $gte: twentyFourHoursAgo },
+      status: { $in: ['scheduled', 'live', 'completed'] },
+    }).sort({ scheduledDateTime: -1 });
 
     if (!currentStream) {
       return res.json({
         unit: { name: unit.name },
         message: 'No stream scheduled',
-        hasStream: false
+        hasStream: false,
       });
     }
 
@@ -34,7 +34,7 @@ const getCurrentStream = async (req, res, next) => {
         unit: { name: unit.name },
         message: currentStream.specialEventMessage || 'Special event - no stream today',
         hasStream: false,
-        isSpecialEvent: true
+        isSpecialEvent: true,
       });
     }
 
@@ -42,12 +42,12 @@ const getCurrentStream = async (req, res, next) => {
       unit: { name: unit.name },
       stream: {
         id: currentStream._id,
-        scheduledDate: currentStream.scheduledDate,
-        scheduledTime: currentStream.scheduledTime,
+        scheduledDateTime: currentStream.scheduledDateTime,
+        timezone: currentStream.timezone,
         status: currentStream.status,
-        youtubeStreamUrl: currentStream.youtubeStreamUrl
+        youtubeStreamUrl: currentStream.youtubeStreamUrl,
       },
-      hasStream: true
+      hasStream: true,
     });
   } catch (error) {
     next(error);
@@ -64,14 +64,14 @@ const submitAttendance = async (req, res, next) => {
       throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     const currentStream = await StreamEvent.findOne({
       unitId: unit._id,
-      scheduledDate: { $gte: today },
-      status: { $in: ['scheduled', 'live'] }
-    }).sort({ scheduledDate: 1 });
+      scheduledDateTime: { $gte: twentyFourHoursAgo },
+      status: { $in: ['scheduled', 'live', 'completed'] },
+    }).sort({ scheduledDateTime: -1 });
 
     if (!currentStream || currentStream.isSpecialEvent) {
       throw new AppError('No active stream available', 400, 'NO_ACTIVE_STREAM');
@@ -81,12 +81,12 @@ const submitAttendance = async (req, res, next) => {
       streamEventId: currentStream._id,
       attendeeName: attendeeName.trim(),
       attendeeCount: parseInt(attendeeCount),
-      ipAddress: req.ip
+      ipAddress: req.ip,
     });
 
     res.status(201).json({
       message: 'Attendance recorded successfully',
-      streamUrl: currentStream.youtubeStreamUrl
+      streamUrl: currentStream.youtubeStreamUrl,
     });
   } catch (error) {
     next(error);
@@ -104,7 +104,7 @@ const getUnitInfo = async (req, res, next) => {
 
     res.json({
       name: unit.name,
-      subdomain: unit.subdomain
+      subdomain: unit.subdomain,
     });
   } catch (error) {
     next(error);
@@ -114,5 +114,5 @@ const getUnitInfo = async (req, res, next) => {
 module.exports = {
   getCurrentStream,
   submitAttendance,
-  getUnitInfo
+  getUnitInfo,
 };
