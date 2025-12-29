@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Row, Col, Card, Button, Form, Modal, Alert, Spinner } from 'react-bootstrap';
 import { useStream } from '../context/StreamContext';
+import { useAuth } from '../context/AuthContext';
+import { useConfig } from '../context/ConfigContext';
 
 const Dashboard = () => {
   const { streams, loading, error, createStream, deleteStream } = useStream();
+  const { user } = useAuth();
+  const { config } = useConfig();
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [streamToDelete, setStreamToDelete] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
   const [formData, setFormData] = useState({
     scheduledDate: '',
     scheduledTime: '10:00 AM',
@@ -57,6 +62,42 @@ const Dashboard = () => {
     }));
   };
 
+  const copyAccessUrl = async () => {
+    if (!config || !user?.units?.[0]) return;
+
+    // Get the unit subdomain - check if it's an object with subdomain property or just an ID
+    const unit = user.units[0];
+    const unitSubdomain =
+      unit?.subdomain || unit?.name?.toLowerCase().replace(/\s+/g, '-') || 'your-unit';
+
+    // Construct the access URL
+    let accessUrl = config.apiUrl.replace('api.', `${unitSubdomain}.`);
+    if (accessUrl.includes('/api')) {
+      accessUrl = accessUrl.replace('/api', '');
+    }
+
+    try {
+      await navigator.clipboard.writeText(accessUrl);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = accessUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   // Calculate stats
   const now = new Date();
   const upcomingStreams = streams.filter(stream => new Date(stream.scheduledDateTime) >= now);
@@ -81,44 +122,66 @@ const Dashboard = () => {
     return (
       <Card key={stream._id} className="mb-3">
         <Card.Body>
-          <Card.Title>
-            {streamDate.toLocaleDateString()} at{' '}
-            {streamDate.toLocaleTimeString([], {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            })}{' '}
-            ({stream.timezone?.replace('America/', '').replace('_', ' ') || 'UTC'})
-            {stream.isSpecialEvent && <span className="badge bg-warning ms-2">Special Event</span>}
-          </Card.Title>
-          <p>
-            Status: <span className="badge bg-primary">{stream.status}</span>
-            {isPast && stream.totalAttendees !== undefined && (
-              <span className="ms-3">
-                Total Attendees: <strong>{stream.totalAttendees}</strong>
-              </span>
-            )}
-          </p>
-          {stream.isSpecialEvent ? (
-            <p className="text-muted">
-              <strong>Message:</strong> {stream.specialEventMessage || 'Special event - no stream'}
-            </p>
-          ) : (
-            stream.youtubeStreamUrl &&
-            (isWithin24Hours || !isPast) && (
-              <p>
-                Stream URL:{' '}
-                <a href={stream.youtubeStreamUrl} target="_blank" rel="noopener noreferrer">
-                  View Stream
-                </a>
+          <div className="d-flex justify-content-between align-items-start">
+            <div className="flex-grow-1">
+              <Card.Title>
+                {streamDate.toLocaleDateString()} at{' '}
+                {streamDate.toLocaleTimeString([], {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                })}{' '}
+                ({stream.timezone?.replace('America/', '').replace('_', ' ') || 'UTC'})
+                {stream.isSpecialEvent && (
+                  <span className="badge bg-warning ms-2">Special Event</span>
+                )}
+              </Card.Title>
+              <p className="mb-2">
+                Status: <span className="badge bg-primary">{stream.status}</span>
+                {isPast && stream.totalAttendees !== undefined && (
+                  <span className="ms-3">
+                    Total Attendees: <strong>{stream.totalAttendees}</strong>
+                  </span>
+                )}
               </p>
-            )
-          )}
-          {!isPast && (
-            <Button variant="danger" onClick={() => handleDeleteStream(stream)} disabled={loading}>
-              Delete {stream.isSpecialEvent ? 'Event' : 'Stream'}
-            </Button>
-          )}
+              {stream.isSpecialEvent && (
+                <p className="text-muted mb-0">
+                  <strong>Message:</strong>{' '}
+                  {stream.specialEventMessage || 'Special event - no stream'}
+                </p>
+              )}
+            </div>
+            <div className="d-flex flex-column gap-2 ms-3">
+              {!stream.isSpecialEvent &&
+                stream.youtubeStreamUrl &&
+                (isWithin24Hours || !isPast) && (
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    href={stream.youtubeStreamUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    as="a"
+                    className="d-flex align-items-center gap-1"
+                  >
+                    <i className="bi bi-play-circle"></i>
+                    View Stream
+                  </Button>
+                )}
+              {!isPast && (
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => handleDeleteStream(stream)}
+                  disabled={loading}
+                  className="d-flex align-items-center gap-1"
+                >
+                  <i className="bi bi-trash"></i>
+                  Delete
+                </Button>
+              )}
+            </div>
+          </div>
         </Card.Body>
       </Card>
     );
@@ -135,7 +198,7 @@ const Dashboard = () => {
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body>
               <Card.Title>Active Streams</Card.Title>
@@ -143,7 +206,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body>
               <Card.Title>Total Attendance</Card.Title>
@@ -151,11 +214,46 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body>
               <Card.Title>This Week</Card.Title>
               <Card.Text className="h3">{thisWeekAttendance}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Stream Access URL</Card.Title>
+              <div className="d-flex align-items-center gap-2">
+                <small className="text-muted flex-grow-1">
+                  {config && user?.units?.[0]
+                    ? (() => {
+                        const unit = user.units[0];
+                        const unitSubdomain =
+                          unit?.subdomain ||
+                          unit?.name?.toLowerCase().replace(/\s+/g, '-') ||
+                          'your-unit';
+                        let url = config.apiUrl.replace('api.', `${unitSubdomain}.`);
+                        if (url.includes('/api')) {
+                          url = url.replace('/api', '');
+                        }
+                        return url;
+                      })()
+                    : 'Loading...'}
+                </small>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={copyAccessUrl}
+                  disabled={!config}
+                  className="d-flex align-items-center gap-1"
+                >
+                  <i className={copySuccess ? 'bi bi-check' : 'bi bi-clipboard'}></i>
+                  {copySuccess ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
             </Card.Body>
           </Card>
         </Col>
