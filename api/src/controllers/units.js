@@ -114,6 +114,47 @@ const getAttendance = async (req, res, next) => {
   }
 };
 
+const getAttendanceTrends = async (req, res, next) => {
+  try {
+    const { unitId } = req.params;
+
+    // Get last 10 completed stream events
+    const streams = await StreamEvent.find({
+      unitId,
+      status: 'completed',
+    })
+      .sort({ scheduledDateTime: -1 })
+      .limit(10);
+
+    const streamIds = streams.map(s => s._id);
+
+    // Get attendance for these streams
+    const attendance = await AttendanceRecord.find({
+      streamEventId: { $in: streamIds },
+    });
+
+    // Calculate total attendance per stream
+    const trends = streams.reverse().map(stream => {
+      const streamAttendance = attendance.filter(
+        record => record.streamEventId.toString() === stream._id.toString()
+      );
+      const totalAttendees = streamAttendance.reduce(
+        (sum, record) => sum + record.attendeeCount,
+        0
+      );
+
+      return {
+        date: stream.scheduledDateTime,
+        totalAttendees,
+      };
+    });
+
+    res.json(trends);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteStream = async (req, res, next) => {
   try {
     const { unitId, streamId } = req.params;
@@ -141,4 +182,5 @@ module.exports = {
   updateStream,
   deleteStream,
   getAttendance,
+  getAttendanceTrends,
 };

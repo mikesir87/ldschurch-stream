@@ -33,4 +33,5 @@ export const streamService = {
   deleteStream: (unitId, streamId) => getApi().delete(`/api/units/${unitId}/streams/${streamId}`),
   getAttendance: (unitId, params = {}) =>
     getApi().get(`/api/units/${unitId}/attendance`, { params }),
+  getAttendanceTrends: unitId => getApi().get(`/api/units/${unitId}/attendance/trends`),
 };

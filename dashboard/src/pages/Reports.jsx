@@ -1,32 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Spinner, Alert, Form } from 'react-bootstrap';
+import { Card, Table, Spinner, Alert, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { streamService } from '../services/api';
+import AttendanceTrends from '../components/AttendanceTrends';
 
 const Reports = () => {
   const { user } = useAuth();
   const [attendance, setAttendance] = useState([]);
+  const [trendsData, setTrendsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [nameFilter, setNameFilter] = useState('');
 
   useEffect(() => {
-    const fetchAttendance = async () => {
+    const fetchData = async () => {
       if (!user?.units?.[0]) return;
 
       try {
         setLoading(true);
         const unitId = typeof user.units[0] === 'string' ? user.units[0] : user.units[0]._id;
-        const response = await streamService.getAttendance(unitId);
-        setAttendance(response.data);
+
+        const [attendanceResponse, trendsResponse] = await Promise.all([
+          streamService.getAttendance(unitId),
+          streamService.getAttendanceTrends(unitId),
+        ]);
+
+        setAttendance(attendanceResponse.data);
+        setTrendsData(trendsResponse.data);
       } catch (err) {
-        setError(err.response?.data?.error?.message || 'Failed to load attendance data');
+        setError(err.response?.data?.error?.message || 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAttendance();
+    fetchData();
   }, [user]);
 
   if (loading) {
@@ -53,6 +61,18 @@ const Reports = () => {
   return (
     <div>
       <h1>Attendance Reports</h1>
+
+      <Row className="mb-4">
+        <Col>
+          <Card>
+            <Card.Header>Attendance Trends</Card.Header>
+            <Card.Body>
+              <AttendanceTrends trendsData={trendsData} />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
       <Card>
         <Card.Header>
           <div>Attendance Reports</div>
