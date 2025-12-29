@@ -11,6 +11,7 @@ import Reports from './pages/Reports';
 import UnitSettings from './pages/UnitSettings';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
+import KonamiCode from './components/KonamiCode';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -36,6 +37,7 @@ function AppContent() {
               </Routes>
             </main>
           </div>
+          <KonamiCode />
         </Router>
       </StreamProvider>
     </UnitProvider>
