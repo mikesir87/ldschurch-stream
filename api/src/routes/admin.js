@@ -10,5 +10,6 @@ router.get('/units', adminController.getUnits);
 router.post('/units', adminController.createUnit);
 router.post('/units/:unitId/invite', adminController.createInviteToken);
 router.get('/users', adminController.getUsers);
+router.post('/youtube/batch', adminController.triggerYoutubeBatch);
 
 module.exports = router;

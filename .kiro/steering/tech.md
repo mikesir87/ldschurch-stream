@@ -368,7 +368,7 @@ spec:
   youtubeEventId: String, // YouTube Live event ID
   youtubeStreamUrl: String,
   streamKey: String, // unique per unit
-  status: String, // "scheduled" | "live" | "completed" | "cancelled"
+  status: String, // "pending" | "scheduled" | "live" | "completed" | "cancelled"
   isSpecialEvent: Boolean, // true for non-streaming events
   specialEventMessage: String, // message for special events
   createdAt: Date,
@@ -513,16 +513,24 @@ const requireGlobalAdmin = (req, res, next) => { ... }
 
 ### Stream Management
 
-- Create YouTube Live events programmatically
+- **Batched Creation**: Stream events created with `pending` status, YouTube Live events created via scheduled batch processing (every 4 hours)
 - Generate unique stream keys per unit using unit ID + timestamp
 - Set events as "Unlisted" for privacy
 - Enable auto-start/auto-stop for streams
 - Delete events and recordings 24 hours after completion
 
+### Quota Management
+
+- **Default Quota**: 10,000 units per day per Google Cloud project
+- **Batch Processing**: Processes up to 50 pending streams per batch to manage quota usage
+- **Rate Limiting**: Additional per-minute (500 units) and burst limits apply
+- **Manual Trigger**: Admin endpoint available for emergency processing
+
 ### Error Handling
 
 - Retry logic for API rate limits
 - Fallback messaging when YouTube API is unavailable
+- Failed YouTube creation marks streams as `cancelled` with error message
 - Logging for all YouTube API interactions
 
 ## Email System
@@ -541,6 +549,15 @@ const requireGlobalAdmin = (req, res, next) => { ... }
 - Include unsubscribe links for compliance
 
 ## Scheduled Tasks
+
+### YouTube Batch Processing (Every 4 Hours)
+
+```javascript
+// Find pending streams scheduled within next 7 days
+// Create YouTube Live events for up to 50 streams per batch
+// Update stream status from 'pending' to 'scheduled'
+// Handle quota limits and API failures gracefully
+```
 
 ### Daily Cleanup (Monday 6 AM)
 

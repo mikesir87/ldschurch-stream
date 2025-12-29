@@ -26,8 +26,8 @@ const streamEventSchema = new mongoose.Schema(
     streamKey: String,
     status: {
       type: String,
-      enum: ['scheduled', 'live', 'completed', 'cancelled'],
-      default: 'scheduled',
+      enum: ['pending', 'scheduled', 'live', 'completed', 'cancelled'],
+      default: 'pending',
       index: true,
     },
     isSpecialEvent: {

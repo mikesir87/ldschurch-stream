@@ -113,19 +113,9 @@ const createStream = async (req, res, next) => {
 
     if (isSpecialEvent) {
       streamData.specialEventMessage = specialEventMessage;
-      streamData.status = 'scheduled';
+      streamData.status = 'scheduled'; // Special events don't need YouTube creation
     } else {
-      // Create YouTube Live event
-      try {
-        const title = `${unit.name} - ${scheduledDate}`;
-        const youtubeEvent = await youtubeService.createLiveEvent(title, scheduledDateTime);
-
-        streamData.youtubeEventId = youtubeEvent.eventId;
-        streamData.youtubeStreamUrl = youtubeEvent.streamUrl;
-        streamData.streamKey = youtubeEvent.streamKey;
-      } catch (error) {
-        throw new AppError('Failed to create YouTube Live event', 500, 'YOUTUBE_API_ERROR');
-      }
+      streamData.status = 'pending'; // Will be processed by batch job
     }
 
     const streamEvent = await StreamEvent.create(streamData);

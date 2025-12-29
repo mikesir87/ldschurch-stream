@@ -88,6 +88,18 @@ const startServer = async () => {
       await seedDevelopmentData();
     }
 
+    // Start scheduled jobs
+    const { JobScheduler } = require('./jobs');
+    const jobScheduler = new JobScheduler();
+    jobScheduler.start();
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      logger.info('Received SIGTERM, shutting down gracefully');
+      jobScheduler.stop();
+      process.exit(0);
+    });
+
     const port = config.server.port;
     app.listen(port, () => {
       logger.info(`Server running on port ${port}`);

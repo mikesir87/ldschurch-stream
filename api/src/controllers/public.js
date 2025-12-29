@@ -18,7 +18,7 @@ const getCurrentStream = async (req, res, next) => {
     const currentStream = await StreamEvent.findOne({
       unitId: unit._id,
       scheduledDateTime: { $gte: twentyFourHoursAgo },
-      status: { $in: ['scheduled', 'live', 'completed'] },
+      status: { $in: ['pending', 'scheduled', 'live', 'completed'] },
     }).sort({ scheduledDateTime: -1 });
 
     if (!currentStream) {
@@ -35,6 +35,16 @@ const getCurrentStream = async (req, res, next) => {
         message: currentStream.specialEventMessage || 'Special event - no stream today',
         hasStream: false,
         isSpecialEvent: true,
+      });
+    }
+
+    // Handle pending streams
+    if (currentStream.status === 'pending') {
+      return res.json({
+        unit: { name: unit.name },
+        message: 'Stream is being prepared. Please check back shortly.',
+        hasStream: false,
+        isPending: true,
       });
     }
 
