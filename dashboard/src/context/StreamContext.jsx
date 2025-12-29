@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { streamService } from '../services/api';
 import { useAuth } from './AuthContext';
+import { useUnit } from './UnitContext';
 
 const StreamContext = createContext();
 
@@ -17,9 +18,9 @@ export const StreamProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const { selectedUnit } = useUnit();
 
-  // Use the first unit from the user's units
-  const unitId = user?.units?.[0]?._id || user?.units?.[0];
+  const unitId = selectedUnit?._id;
 
   const loadStreams = async () => {
     if (!unitId) return;
@@ -71,6 +72,8 @@ export const StreamProvider = ({ children }) => {
   useEffect(() => {
     if (user && unitId) {
       loadStreams();
+    } else {
+      setStreams([]);
     }
   }, [user, unitId]);
 

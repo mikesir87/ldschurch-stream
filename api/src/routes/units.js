@@ -5,6 +5,7 @@ const { authenticateToken, authorizeUnit } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+router.get('/', unitsController.getUserUnits);
 router.get('/:unitId/streams', authorizeUnit, unitsController.getStreams);
 router.post('/:unitId/streams', authorizeUnit, unitsController.createStream);
 router.put('/:unitId/streams/:streamId', authorizeUnit, unitsController.updateStream);

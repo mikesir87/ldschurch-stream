@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { UnitProvider } from './context/UnitContext';
 import { StreamProvider } from './context/StreamContext';
 import { initializeApi } from './services/api';
 import Navigation from './components/Navigation';
@@ -21,17 +22,19 @@ function AppContent() {
   }
 
   return (
-    <StreamProvider>
-      <Router>
-        <Navigation />
-        <Container className="mt-4">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/reports" element={<Reports />} />
-          </Routes>
-        </Container>
-      </Router>
-    </StreamProvider>
+    <UnitProvider>
+      <StreamProvider>
+        <Router>
+          <Navigation />
+          <Container className="mt-4">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/reports" element={<Reports />} />
+            </Routes>
+          </Container>
+        </Router>
+      </StreamProvider>
+    </UnitProvider>
   );
 }
 

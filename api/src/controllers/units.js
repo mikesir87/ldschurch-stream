@@ -1,7 +1,28 @@
 const StreamEvent = require('../models/StreamEvent');
 const AttendanceRecord = require('../models/AttendanceRecord');
 const Unit = require('../models/Unit');
+const User = require('../models/User');
 const { AppError } = require('../middleware/errorHandler');
+
+const getUserUnits = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+
+    let units;
+    if (user.role === 'global_admin') {
+      units = await Unit.find({ isActive: true }).sort({ name: 1 });
+    } else {
+      units = await Unit.find({ _id: { $in: user.units }, isActive: true }).sort({ name: 1 });
+    }
+
+    res.json(units);
+  } catch (error) {
+    next(error);
+  }
+};
 
 const getStreams = async (req, res, next) => {
   try {
@@ -218,6 +239,7 @@ const deleteStream = async (req, res, next) => {
 };
 
 module.exports = {
+  getUserUnits,
   getStreams,
   createStream,
   updateStream,
