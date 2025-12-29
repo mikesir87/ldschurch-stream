@@ -110,18 +110,12 @@ const Dashboard = () => {
   const now = new Date();
   const upcomingStreams = streams.filter(stream => new Date(stream.scheduledDateTime) >= now);
   const pastStreams = streams.filter(stream => new Date(stream.scheduledDateTime) < now).reverse();
-  const activeStreams = streams.filter(stream => stream.status === 'live').length;
+  const totalStreams = streams.length;
   const totalAttendance = pastStreams.reduce(
     (sum, stream) => sum + (stream.totalAttendees || 0),
     0
   );
-  const thisWeekAttendance = pastStreams
-    .filter(stream => {
-      const streamDate = new Date(stream.scheduledDateTime);
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return streamDate >= weekAgo;
-    })
-    .reduce((sum, stream) => sum + (stream.totalAttendees || 0), 0);
+  const lastEventAttendance = pastStreams.length > 0 ? pastStreams[0].totalAttendees || 0 : 0;
 
   const renderStreamCard = (stream, isPast = false) => {
     const streamDate = new Date(stream.scheduledDateTime);
@@ -217,8 +211,8 @@ const Dashboard = () => {
         <Col md={3}>
           <Card className="stats-card border-primary-light">
             <Card.Body className="text-center">
-              <div className="stats-number">{activeStreams}</div>
-              <div className="stats-label">Active Streams</div>
+              <div className="stats-number">{totalStreams}</div>
+              <div className="stats-label">Total Streams</div>
             </Card.Body>
           </Card>
         </Col>
@@ -226,20 +220,20 @@ const Dashboard = () => {
           <Card className="stats-card border-primary-light">
             <Card.Body className="text-center">
               <div className="stats-number">{totalAttendance}</div>
-              <div className="stats-label">Total Attendance</div>
+              <div className="stats-label">Total Attendees</div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
           <Card className="stats-card border-primary-light">
             <Card.Body className="text-center">
-              <div className="stats-number">{thisWeekAttendance}</div>
-              <div className="stats-label">This Week</div>
+              <div className="stats-number">{lastEventAttendance}</div>
+              <div className="stats-label">Last Event Attendees</div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="stats-card border-primary-light">
+          <Card className="stats-card border-success bg-light">
             <Card.Body>
               <div className="stats-label mb-2">Stream Access URL</div>
               <div className="d-flex align-items-center gap-2">
@@ -260,7 +254,7 @@ const Dashboard = () => {
                     : 'Loading...'}
                 </small>
                 <Button
-                  variant="outline-primary"
+                  variant="outline-success"
                   size="sm"
                   onClick={copyAccessUrl}
                   disabled={!config}
