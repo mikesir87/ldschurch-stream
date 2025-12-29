@@ -1,0 +1,94 @@
+// Custom Bootstrap Variables
+// Based on logo color #224466
+
+// Color Palette
+$primary: #224466;
+$secondary: #6c757d;
+$success: #28a745;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f8f9fa;
+$dark: #343a40;
+
+// Extended Color Palette
+$blue-primary: #224466;
+$blue-light: #4a6b8a;
+$blue-lighter: #7a8fa8;
+$blue-lightest: #e8eef5;
+$gray-50: #fafbfc;
+$gray-100: #f5f7fa;
+$gray-200: #e4e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+// Typography
+$font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-size-base: 1rem;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$h1-font-size: 2.5rem;
+$h2-font-size: 2rem;
+$h3-font-size: 1.75rem;
+$h4-font-size: 1.5rem;
+$h5-font-size: 1.25rem;
+$h6-font-size: 1rem;
+
+// Spacing
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * 0.25,
+  2: $spacer * 0.5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  6: $spacer * 4,
+  7: $spacer * 5,
+);
+
+// Border radius
+$border-radius: 0.5rem;
+$border-radius-sm: 0.375rem;
+$border-radius-lg: 0.75rem;
+$border-radius-xl: 1rem;
+
+// Shadows
+$box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+$box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+$box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+
+// Component specific
+$navbar-brand-font-size: 1.5rem;
+$navbar-brand-font-weight: $font-weight-bold;
+$navbar-padding-y: 1rem;
+$navbar-dark-bg: $blue-primary;
+
+$card-border-radius: $border-radius-lg;
+$card-box-shadow: $box-shadow;
+$card-cap-bg: $gray-50;
+
+$btn-border-radius: $border-radius;
+$btn-font-weight: $font-weight-medium;
+$btn-padding-y: 0.75rem;
+$btn-padding-x: 1.5rem;
+
+$input-border-radius: $border-radius;
+$input-focus-border-color: $blue-light;
+$input-focus-box-shadow: 0 0 0 0.2rem rgba(34, 68, 102, 0.25);
+
+$table-striped-bg: $gray-50;
+$table-hover-bg: $blue-lightest;
+
+// Background colors
+$body-bg: $gray-50;
+$body-color: $gray-800;

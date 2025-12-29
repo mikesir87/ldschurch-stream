@@ -1,0 +1,348 @@
+// Import Google Font
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// Import custom variables
+@import './variables.scss';
+
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Custom component styles
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  .logo {
+    height: 2rem;
+    width: auto;
+  }
+}
+
+.navbar {
+  box-shadow: $box-shadow-sm;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card {
+  border: 1px solid $gray-200;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-lg;
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+    color: white;
+    font-weight: $font-weight-semibold;
+    border-bottom: none;
+  }
+}
+
+.btn {
+  transition: all 0.2s ease-in-out;
+  
+  &.btn-primary {
+    background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+    border: none;
+    
+    &:hover {
+      background: linear-gradient(135deg, darken($blue-primary, 10%) 0%, darken($blue-light, 10%) 100%);
+      transform: translateY(-1px);
+      box-shadow: $box-shadow;
+    }
+  }
+  
+  &.btn-outline-primary {
+    border-color: $blue-primary;
+    color: $blue-primary;
+    
+    &:hover {
+      background: $blue-primary;
+      border-color: $blue-primary;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.table {
+  th {
+    background-color: $blue-lightest;
+    color: $blue-primary;
+    font-weight: $font-weight-semibold;
+    border-bottom: 2px solid $blue-light;
+  }
+  
+  tbody tr {
+    transition: background-color 0.2s ease-in-out;
+  }
+}
+
+.form-control, .form-select {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  
+  &:focus {
+    border-color: $blue-light;
+    box-shadow: $input-focus-box-shadow;
+  }
+}
+
+.badge {
+  font-weight: $font-weight-medium;
+  
+  &.bg-primary {
+    background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%) !important;
+  }
+}
+
+// Custom utility classes
+.bg-gradient-primary {
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%) !important;
+}
+
+.text-primary-dark {
+  color: $blue-primary !important;
+}
+
+.border-primary-light {
+  border-color: $blue-lightest !important;
+}
+
+// Loading states
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  
+  .spinner-border {
+    color: $blue-primary;
+  }
+}
+
+// Dashboard specific styles
+.dashboard-header {
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+  color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: $border-radius-lg;
+  
+  h1 {
+    font-weight: $font-weight-bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .lead {
+    opacity: 0.9;
+  }
+}
+
+.stats-card {
+  .card-body {
+    padding: 2rem;
+  }
+  
+  .stats-number {
+    font-size: 2.5rem;
+    font-weight: $font-weight-bold;
+    color: $blue-primary;
+    line-height: 1;
+  }
+  
+  .stats-label {
+    color: $gray-600;
+    font-weight: $font-weight-medium;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+}
+
+// Access app specific styles
+.access-hero {
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+  
+  .logo {
+    height: 4rem;
+    width: auto;
+    margin-bottom: 1.5rem;
+  }
+  
+  h1 {
+    font-weight: $font-weight-bold;
+    margin-bottom: 1rem;
+  }
+  
+  .lead {
+    opacity: 0.9;
+    font-size: 1.25rem;
+  }
+}
+
+.attendance-form {
+  .card {
+    max-width: 500px;
+    margin: 0 auto;
+    
+    .card-body {
+      padding: 2.5rem;
+    }
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1.1rem;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.special-event-message {
+  background: linear-gradient(135deg, $warning 0%, lighten($warning, 10%) 100%);
+  color: $gray-800;
+  padding: 2rem;
+  border-radius: $border-radius-lg;
+  text-align: center;
+  
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+  
+  h3 {
+    font-weight: $font-weight-bold;
+    margin-bottom: 1rem;
+  }
+}
+
+// Landing page specific styles
+.hero-section {
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+  color: white;
+  padding: 6rem 0;
+  text-align: center;
+  
+  .logo {
+    height: 5rem;
+    width: auto;
+    margin-bottom: 2rem;
+  }
+  
+  h1 {
+    font-size: 3.5rem;
+    font-weight: $font-weight-bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .lead {
+    font-size: 1.5rem;
+    opacity: 0.9;
+    margin-bottom: 2.5rem;
+  }
+  
+  .btn {
+    font-size: 1.25rem;
+    padding: 1rem 2.5rem;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.features-section {
+  padding: 5rem 0;
+  
+  .feature-card {
+    text-align: center;
+    padding: 2rem;
+    
+    .feature-icon {
+      font-size: 3rem;
+      color: $blue-primary;
+      margin-bottom: 1.5rem;
+    }
+    
+    h4 {
+      font-weight: $font-weight-semibold;
+      color: $blue-primary;
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+// Animation utilities
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+    
+    h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  .stats-card .stats-number {
+    font-size: 2rem;
+  }
+  
+  .access-hero {
+    padding: 3rem 0;
+    
+    .logo {
+      height: 3rem;
+    }
+    
+    h1 {
+      font-size: 2rem;
+    }
+    
+    .lead {
+      font-size: 1.1rem;
+    }
+  }
+  
+  .hero-section {
+    padding: 4rem 0;
+    
+    .logo {
+      height: 4rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+    
+    .lead {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .attendance-form .card .card-body {
+    padding: 2rem;
+  }
+}

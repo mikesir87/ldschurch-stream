@@ -10,7 +10,6 @@ import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AppContent() {
   const { user, loading } = useAuth();

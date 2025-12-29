@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Button, Form, Modal, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Card, Button, Form, Modal, Alert, Spinner, Container } from 'react-bootstrap';
 import { useStream } from '../context/StreamContext';
 import { useAuth } from '../context/AuthContext';
 import { useConfig } from '../context/ConfigContext';
@@ -188,46 +188,54 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
+    <div className="fade-in">
+      {/* Dashboard Header */}
+      <div className="dashboard-header text-center">
+        <Container>
+          <h1>Stream Dashboard</h1>
+          <p className="lead mb-0">Manage your congregation's streaming events</p>
+        </Container>
+      </div>
+
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Dashboard</h1>
-        <Button onClick={() => setShowModal(true)} disabled={loading}>
+        <h2 className="text-primary-dark mb-0">Overview</h2>
+        <Button onClick={() => setShowModal(true)} disabled={loading} className="btn-primary">
           Create Event
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <Row className="mb-4">
+      <Row className="mb-5">
         <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Active Streams</Card.Title>
-              <Card.Text className="h3">{activeStreams}</Card.Text>
+          <Card className="stats-card border-primary-light">
+            <Card.Body className="text-center">
+              <div className="stats-number">{activeStreams}</div>
+              <div className="stats-label">Active Streams</div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Total Attendance</Card.Title>
-              <Card.Text className="h3">{totalAttendance}</Card.Text>
+          <Card className="stats-card border-primary-light">
+            <Card.Body className="text-center">
+              <div className="stats-number">{totalAttendance}</div>
+              <div className="stats-label">Total Attendance</div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>This Week</Card.Title>
-              <Card.Text className="h3">{thisWeekAttendance}</Card.Text>
+          <Card className="stats-card border-primary-light">
+            <Card.Body className="text-center">
+              <div className="stats-number">{thisWeekAttendance}</div>
+              <div className="stats-label">This Week</div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={3}>
-          <Card>
+          <Card className="stats-card border-primary-light">
             <Card.Body>
-              <Card.Title>Stream Access URL</Card.Title>
+              <div className="stats-label mb-2">Stream Access URL</div>
               <div className="d-flex align-items-center gap-2">
-                <small className="text-muted flex-grow-1">
+                <small className="text-muted flex-grow-1" style={{ fontSize: '0.75rem' }}>
                   {config && user?.units?.[0]
                     ? (() => {
                         const unit = user.units[0];
@@ -266,9 +274,11 @@ const Dashboard = () => {
       )}
 
       {loading ? (
-        <div className="text-center">
-          <Spinner animation="border" />
-          <p>Loading streams...</p>
+        <div className="loading-spinner">
+          <div className="text-center">
+            <Spinner animation="border" />
+            <p className="mt-3 text-muted">Loading streams...</p>
+          </div>
         </div>
       ) : streams.length === 0 ? (
         <Card>

@@ -9,9 +9,12 @@ const Navigation = () => {
   const { units, selectedUnit, selectUnit } = useUnit();
 
   return (
-    <Navbar bg="primary" variant="dark" expand="lg">
+    <Navbar bg="primary" variant="dark" expand="lg" className="navbar">
       <Container>
-        <Navbar.Brand>LDSChurch.Stream Dashboard</Navbar.Brand>
+        <Navbar.Brand className="navbar-brand">
+          <img src="/logos/logo-white.svg" alt="LDSChurch.Stream" className="logo" />
+          LDSChurch.Stream
+        </Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse>
           <Nav className="me-auto">
