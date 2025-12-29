@@ -47,11 +47,17 @@ const Reports = () => {
     record.attendeeName.toLowerCase().includes(nameFilter.toLowerCase())
   );
 
+  // Calculate total count of filtered attendees
+  const totalCount = filteredAttendance.reduce((sum, record) => sum + record.attendeeCount, 0);
+
   return (
     <div>
       <h1>Attendance Reports</h1>
       <Card>
-        <Card.Header>Recent Attendance ({filteredAttendance.length} records)</Card.Header>
+        <Card.Header>
+          <div>Attendance Reports</div>
+          <small className="text-muted">Last 30 days • {filteredAttendance.length} records</small>
+        </Card.Header>
         <Card.Body>
           <Form.Group className="mb-3">
             <Form.Label>Filter by Name</Form.Label>
@@ -94,6 +100,11 @@ const Reports = () => {
               )}
             </tbody>
           </Table>
+          {filteredAttendance.length > 0 && (
+            <div className="text-end text-muted">
+              <strong>Total Attendees: {totalCount}</strong>
+            </div>
+          )}
         </Card.Body>
       </Card>
     </div>
