@@ -3289,4 +3289,34 @@ Frontend apps use runtime configuration instead of build-time environment variab
 }
 ```
 
+### React Bootstrap Import Optimization
+
+All React Bootstrap components use direct imports to reduce bundle size:
+
+```javascript
+// Optimized imports (required)
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+
+// Avoided imports (blocked by ESLint)
+import { Button, Card, Form } from 'react-bootstrap'; // ❌ ESLint error
+```
+
+ESLint rule enforces this pattern:
+
+```json
+"no-restricted-imports": [
+  "error",
+  {
+    "paths": [
+      {
+        "name": "react-bootstrap",
+        "message": "Import specific components from 'react-bootstrap/ComponentName' instead to reduce bundle size."
+      }
+    ]
+  }
+]
+```
+
 This structure ensures consistency across all three applications while maintaining clear separation of concerns and following modern development practices.
