@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Alert, Spinner, Form } from 'react-bootstrap';
+import { Card, Button, Spinner, Form } from 'react-bootstrap';
 import { initializeApi } from '../services/api';
 import { extractSubdomain } from '../utils/subdomain';
 
@@ -63,74 +63,95 @@ const StreamAccess = () => {
 
   if (loading) {
     return (
-      <div className="text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
+      <div className="stream-access-container">
+        <div className="text-center">
+          <Spinner animation="border" role="status" variant="light" size="lg">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          <p className="text-white mt-3">Loading stream information...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="danger">
-        <h5>Error</h5>
-        <p>{error}</p>
-      </Alert>
+      <div className="stream-access-container">
+        <div className="special-event-message bg-danger text-white">
+          <div className="icon">⚠️</div>
+          <h3>Error</h3>
+          <p className="mb-0">{error}</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="text-center">
-      <Card>
-        <Card.Body>
-          <Card.Title className="mb-4">{unit?.name || 'Ward'} Sacrament Meeting</Card.Title>
+    <div className="stream-access-container">
+      <div className="text-center mb-4">
+        <h1 className="text-white mb-3">{unit?.name || 'Ward'}</h1>
+      </div>
 
-          {streamData?.hasStream ? (
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={attendeeName}
-                  onChange={e => setAttendeeName(e.target.value)}
-                  required
-                  placeholder="Enter your name"
-                />
-              </Form.Group>
+      {streamData?.hasStream ? (
+        <div className="attendance-form">
+          <div className="text-center mb-4">
+            <p className="text-white lead mb-2">
+              Before joining today's stream, please help us know who's attending
+            </p>
+            <p className="text-white-50">This helps our leadership assist in ministering efforts</p>
+          </div>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Number of Attendees</Form.Label>
-                <Form.Control
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={attendeeCount}
-                  onChange={e => setAttendeeCount(e.target.value)}
-                  required
-                />
-              </Form.Group>
+          <Card className="shadow-lg">
+            <Card.Body>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={attendeeName}
+                    onChange={e => setAttendeeName(e.target.value)}
+                    required
+                    placeholder="Enter your name"
+                    size="lg"
+                  />
+                </Form.Group>
 
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-                disabled={submitting || !attendeeName.trim()}
-              >
-                {submitting ? 'Submitting...' : 'Join Stream'}
-              </Button>
-            </Form>
-          ) : (
-            <Alert variant="info">
-              <h5>{streamData?.isSpecialEvent ? 'Special Event' : 'No Active Stream'}</h5>
-              <p>
-                {streamData?.message ||
-                  'There is currently no live stream available. Please check back during sacrament meeting time.'}
-              </p>
-            </Alert>
-          )}
-        </Card.Body>
-      </Card>
+                <Form.Group className="mb-4">
+                  <Form.Label>Number of Attendees</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={attendeeCount}
+                    onChange={e => setAttendeeCount(e.target.value)}
+                    required
+                    size="lg"
+                  />
+                </Form.Group>
+
+                <Button
+                  variant="primary"
+                  size="lg"
+                  type="submit"
+                  disabled={submitting || !attendeeName.trim()}
+                  className="w-100"
+                >
+                  {submitting ? 'Submitting...' : 'Join Stream'}
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+        </div>
+      ) : (
+        <div className="special-event-message">
+          <div className="icon">📺</div>
+          <h3>{streamData?.isSpecialEvent ? 'Special Event' : 'No Active Stream'}</h3>
+          <p className="mb-0">
+            {streamData?.message ||
+              'There is currently no live stream available. Please check back during sacrament meeting time.'}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

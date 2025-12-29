@@ -162,6 +162,16 @@
 }
 
 // Access app specific styles
+.app-background {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+}
+
+.stream-access-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
 .access-hero {
   background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
   color: white;
@@ -187,8 +197,8 @@
 
 .attendance-form {
   .card {
-    max-width: 500px;
-    margin: 0 auto;
+    border: none;
+    border-radius: $border-radius-xl;
     
     .card-body {
       padding: 2.5rem;
@@ -199,20 +209,54 @@
     margin-bottom: 1.5rem;
   }
   
+  .form-label {
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: 0.75rem;
+  }
+  
+  .form-control {
+    border-radius: $border-radius-lg;
+    border: 2px solid $gray-200;
+    padding: 0.875rem 1rem;
+    
+    &:focus {
+      border-color: $blue-primary;
+      box-shadow: 0 0 0 0.2rem rgba(34, 68, 102, 0.15);
+    }
+  }
+  
   .btn-primary {
-    width: 100%;
-    padding: 0.875rem;
+    padding: 1rem;
     font-size: 1.1rem;
     font-weight: $font-weight-semibold;
+    border-radius: $border-radius-lg;
+    border: none;
+    background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, darken($blue-primary, 10%) 0%, darken($blue-light, 10%) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(34, 68, 102, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+    }
   }
 }
 
 .special-event-message {
   background: linear-gradient(135deg, $warning 0%, lighten($warning, 10%) 100%);
   color: $gray-800;
-  padding: 2rem;
-  border-radius: $border-radius-lg;
+  padding: 2.5rem;
+  border-radius: $border-radius-xl;
   text-align: center;
+  box-shadow: $box-shadow-lg;
+  
+  &.bg-danger {
+    background: linear-gradient(135deg, $danger 0%, lighten($danger, 10%) 100%) !important;
+  }
   
   .icon {
     font-size: 3rem;
@@ -342,7 +386,32 @@
     }
   }
   
+  .stream-access-container {
+    padding: 0 1rem;
+    
+    h1 {
+      font-size: 1.75rem;
+    }
+    
+    .lead {
+      font-size: 1rem;
+    }
+  }
+  
   .attendance-form .card .card-body {
     padding: 2rem;
+  }
+  
+  .special-event-message {
+    padding: 2rem;
+    margin: 0 1rem;
+    
+    .icon {
+      font-size: 2.5rem;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+    }
   }
 }
