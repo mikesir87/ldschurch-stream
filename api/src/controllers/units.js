@@ -111,7 +111,7 @@ const getAttendance = async (req, res, next) => {
     const streams = await StreamEvent.find({
       unitId,
       scheduledDateTime: {
-        $gte: startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        $gte: startDate ? new Date(startDate) : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
         $lte: endDate ? new Date(endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Include next year
       },
     });
@@ -124,7 +124,7 @@ const getAttendance = async (req, res, next) => {
     }
 
     const attendance = await AttendanceRecord.find(attendanceQuery)
-      .populate('streamEventId', 'scheduledDate scheduledTime')
+      .populate('streamEventId', 'scheduledDateTime')
       .sort({ submittedAt: -1 });
 
     res.json(attendance);
