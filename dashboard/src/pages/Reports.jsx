@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Spinner, Alert } from 'react-bootstrap';
+import { Card, Table, Spinner, Alert, Form } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { streamService } from '../services/api';
 
@@ -8,6 +8,7 @@ const Reports = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nameFilter, setNameFilter] = useState('');
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -41,12 +42,26 @@ const Reports = () => {
     return <Alert variant="danger">Error: {error}</Alert>;
   }
 
+  // Filter attendance records by name
+  const filteredAttendance = attendance.filter(record =>
+    record.attendeeName.toLowerCase().includes(nameFilter.toLowerCase())
+  );
+
   return (
     <div>
       <h1>Attendance Reports</h1>
       <Card>
-        <Card.Header>Recent Attendance ({attendance.length} records)</Card.Header>
+        <Card.Header>Recent Attendance ({filteredAttendance.length} records)</Card.Header>
         <Card.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Filter by Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter name to filter..."
+              value={nameFilter}
+              onChange={e => setNameFilter(e.target.value)}
+            />
+          </Form.Group>
           <Table striped bordered hover>
             <thead>
               <tr>
@@ -58,14 +73,16 @@ const Reports = () => {
               </tr>
             </thead>
             <tbody>
-              {attendance.length === 0 ? (
+              {filteredAttendance.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center text-muted">
-                    No attendance data available
+                    {nameFilter
+                      ? 'No matching attendance records found'
+                      : 'No attendance data available'}
                   </td>
                 </tr>
               ) : (
-                attendance.map(record => (
+                filteredAttendance.map(record => (
                   <tr key={record._id}>
                     <td>{new Date(record.streamEventId.scheduledDate).toLocaleDateString()}</td>
                     <td>{record.streamEventId.scheduledTime}</td>
