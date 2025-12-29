@@ -4,6 +4,8 @@ const Unit = require('../models/Unit');
 const User = require('../models/User');
 const { AppError } = require('../middleware/errorHandler');
 const youtubeService = require('../services/youtubeService');
+const { recordStreamCreation } = require('../utils/metrics');
+const logger = require('../utils/logger');
 
 const getUserUnits = async (req, res, next) => {
   try {
@@ -119,8 +121,14 @@ const createStream = async (req, res, next) => {
     }
 
     const streamEvent = await StreamEvent.create(streamData);
+
+    // Record metrics
+    recordStreamCreation(unitId, true);
+
     res.status(201).json(streamEvent);
   } catch (error) {
+    // Record failed stream creation
+    recordStreamCreation(req.params.unitId, false);
     next(error);
   }
 };
@@ -230,7 +238,7 @@ const deleteStream = async (req, res, next) => {
         await youtubeService.deleteEvent(stream.youtubeEventId);
       } catch (error) {
         // Log but don't fail the deletion if YouTube cleanup fails
-        console.warn('Failed to delete YouTube event:', error.message);
+        logger.warn('Failed to delete YouTube event:', error.message);
       }
     }
 

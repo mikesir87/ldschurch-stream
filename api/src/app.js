@@ -1,3 +1,6 @@
+// Initialize instrumentation first
+require('./instrumentation');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const { connectDatabase } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
+const correlationMiddleware = require('./middleware/correlation');
 const routes = require('./routes');
 const logger = require('./utils/logger');
 
@@ -56,6 +60,9 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Request correlation
+app.use(correlationMiddleware);
 
 // Health check
 app.get('/health', (req, res) => {

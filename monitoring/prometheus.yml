@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - 'alerts.yml'
+
+scrape_configs:
+  - job_name: 'ldschurch-stream-api'
+    static_configs:
+      - targets: ['api:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # Add alertmanager if needed
+          # - alertmanager:9093

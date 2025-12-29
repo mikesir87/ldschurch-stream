@@ -83,10 +83,16 @@ services:
       - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
       - YOUTUBE_ACCESS_TOKEN=placeholder-access-token
       - YOUTUBE_REFRESH_TOKEN=placeholder-refresh-token
+    ports:
+      - '9090:9090' # Prometheus metrics
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'
+      - 'traefik.http.routers.api.service=api'
       - 'traefik.http.services.api.loadbalancer.server.port=3000'
+      - 'traefik.http.routers.metrics.rule=Host(`metrics.traefik.me`)'
+      - 'traefik.http.routers.metrics.service=metrics'
+      - 'traefik.http.services.metrics.loadbalancer.server.port=9090'
     depends_on:
       mongodb:
         condition: service_healthy
@@ -170,5 +176,41 @@ services:
         - action: rebuild
           path: ./landing/package.json
 
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.prometheus.rule=Host(`prometheus.traefik.me`)'
+      - 'traefik.http.services.prometheus.loadbalancer.server.port=9090'
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/ldschurch-stream.json
+      - ./monitoring/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.grafana.rule=Host(`grafana.traefik.me`)'
+      - 'traefik.http.services.grafana.loadbalancer.server.port=3000'
+    depends_on:
+      - prometheus
+
 volumes:
   mongodb_data:
+  prometheus_data:
+  grafana_data:

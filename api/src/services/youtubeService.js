@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const config = require('../config');
 const logger = require('../utils/logger');
+const { recordYouTubeRequest } = require('../utils/metrics');
 
 class YouTubeService {
   constructor() {
@@ -132,6 +133,11 @@ class YouTubeService {
         title,
       });
 
+      // Record successful API calls
+      recordYouTubeRequest('liveBroadcasts.insert', true);
+      recordYouTubeRequest('liveStreams.insert', true);
+      recordYouTubeRequest('liveBroadcasts.bind', true);
+
       return {
         eventId: broadcast.data.id,
         streamId: stream.data.id,
@@ -143,6 +149,11 @@ class YouTubeService {
         error: error.message,
         title,
       });
+
+      // Record failed API call with specific error type
+      const errorType =
+        error.code === 403 ? 'quota_exceeded' : error.code === 429 ? 'rate_limit' : 'api_error';
+      recordYouTubeRequest('createLiveEvent', false, errorType);
       throw error;
     }
   }
@@ -156,11 +167,16 @@ class YouTubeService {
       });
 
       logger.info('YouTube Live event deleted', { eventId });
+      recordYouTubeRequest('liveBroadcasts.delete', true);
     } catch (error) {
       logger.error('Failed to delete YouTube Live event', {
         error: error.message,
         eventId,
       });
+
+      const errorType =
+        error.code === 403 ? 'quota_exceeded' : error.code === 429 ? 'rate_limit' : 'api_error';
+      recordYouTubeRequest('liveBroadcasts.delete', false, errorType);
       throw error;
     }
   }

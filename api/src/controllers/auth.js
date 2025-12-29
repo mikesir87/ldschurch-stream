@@ -4,6 +4,7 @@ const User = require('../models/User');
 const InviteToken = require('../models/InviteToken');
 const config = require('../config');
 const { AppError } = require('../middleware/errorHandler');
+const { recordUserLogin } = require('../utils/metrics');
 
 const login = async (req, res, next) => {
   try {
@@ -22,28 +23,29 @@ const login = async (req, res, next) => {
     user.lastLoginAt = new Date();
     await user.save();
 
+    // Record successful login
+    recordUserLogin(user._id.toString(), true, user.role);
+
     const accessToken = jwt.sign(
-      { 
-        id: user._id, 
-        email: user.email, 
+      {
+        id: user._id,
+        email: user.email,
         role: user.role,
-        units: user.units.map(u => u._id.toString())
+        units: user.units.map(u => u._id.toString()),
       },
       config.auth.jwtSecret,
       { expiresIn: config.auth.accessTokenExpiry }
     );
 
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      config.auth.jwtRefreshSecret,
-      { expiresIn: config.auth.refreshTokenExpiry }
-    );
+    const refreshToken = jwt.sign({ id: user._id }, config.auth.jwtRefreshSecret, {
+      expiresIn: config.auth.refreshTokenExpiry,
+    });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.json({
@@ -53,10 +55,14 @@ const login = async (req, res, next) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        units: user.units
-      }
+        units: user.units,
+      },
     });
   } catch (error) {
+    // Record failed login attempt
+    if (error.code === 'INVALID_CREDENTIALS') {
+      recordUserLogin(null, false);
+    }
     next(error);
   }
 };
@@ -68,7 +74,7 @@ const registerWithInvite = async (req, res, next) => {
     const inviteToken = await InviteToken.findOne({
       token,
       isActive: true,
-      expiresAt: { $gt: new Date() }
+      expiresAt: { $gt: new Date() },
     }).populate('unitId');
 
     if (!inviteToken) {
@@ -87,7 +93,7 @@ const registerWithInvite = async (req, res, next) => {
       name,
       hashedPassword,
       units: [inviteToken.unitId._id],
-      role: 'specialist'
+      role: 'specialist',
     });
 
     inviteToken.usedAt = new Date();
@@ -102,8 +108,8 @@ const registerWithInvite = async (req, res, next) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        units: [inviteToken.unitId]
-      }
+        units: [inviteToken.unitId],
+      },
     });
   } catch (error) {
     next(error);
@@ -126,27 +132,25 @@ const refresh = async (req, res, next) => {
     }
 
     const accessToken = jwt.sign(
-      { 
-        id: user._id, 
-        email: user.email, 
+      {
+        id: user._id,
+        email: user.email,
         role: user.role,
-        units: user.units.map(u => u._id.toString())
+        units: user.units.map(u => u._id.toString()),
       },
       config.auth.jwtSecret,
       { expiresIn: config.auth.accessTokenExpiry }
     );
 
-    const newRefreshToken = jwt.sign(
-      { id: user._id },
-      config.auth.jwtRefreshSecret,
-      { expiresIn: config.auth.refreshTokenExpiry }
-    );
+    const newRefreshToken = jwt.sign({ id: user._id }, config.auth.jwtRefreshSecret, {
+      expiresIn: config.auth.refreshTokenExpiry,
+    });
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ accessToken });
@@ -164,5 +168,5 @@ module.exports = {
   login,
   registerWithInvite,
   refresh,
-  logout
+  logout,
 };

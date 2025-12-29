@@ -2,6 +2,7 @@ const Unit = require('../models/Unit');
 const StreamEvent = require('../models/StreamEvent');
 const AttendanceRecord = require('../models/AttendanceRecord');
 const { AppError } = require('../middleware/errorHandler');
+const { recordAttendanceSubmission } = require('../utils/metrics');
 
 const getCurrentStream = async (req, res, next) => {
   try {
@@ -93,6 +94,9 @@ const submitAttendance = async (req, res, next) => {
       attendeeCount: parseInt(attendeeCount),
       ipAddress: req.ip,
     });
+
+    // Record metrics
+    recordAttendanceSubmission(unit._id.toString());
 
     res.status(201).json({
       message: 'Attendance recorded successfully',

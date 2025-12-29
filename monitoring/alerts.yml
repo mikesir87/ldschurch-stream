@@ -1,0 +1,102 @@
+groups:
+  - name: ldschurch-stream-alerts
+    rules:
+      # API Health Alerts
+      - alert: HighErrorRate
+        expr: rate(http_server_duration_count{service_name="ldschurch-stream-api",http_status_code=~"5.."}[5m]) / rate(http_server_duration_count{service_name="ldschurch-stream-api"}[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'High error rate detected'
+          description: 'Error rate is {{ $value }}% for the last 5 minutes'
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_server_duration_bucket{service_name="ldschurch-stream-api"}[5m])) > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High response time detected'
+          description: '95th percentile response time is {{ $value }}ms'
+
+      - alert: APIDown
+        expr: up{job="ldschurch-stream-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'API service is down'
+          description: 'LDSChurch.Stream API has been down for more than 30 seconds'
+
+      # Business Logic Alerts
+      - alert: StreamCreationFailures
+        expr: rate(stream_events_created_total{service_name="ldschurch-stream-api",status="failed"}[10m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Stream creation failures detected'
+          description: '{{ $value }} stream creation failures per second in the last 10 minutes'
+
+      - alert: YouTubeAPIErrors
+        expr: rate(youtube_api_requests_total{service_name="ldschurch-stream-api",status="error"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'YouTube API errors detected'
+          description: '{{ $value }} YouTube API errors per second in the last 5 minutes'
+
+      - alert: EmailDeliveryFailures
+        expr: rate(emails_sent_total{service_name="ldschurch-stream-api",status="failed"}[10m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Email delivery failures'
+          description: '{{ $value }} email delivery failures per second in the last 10 minutes'
+
+      # Database Alerts
+      - alert: DatabaseConnectionIssues
+        expr: db_client_connections_usage{service_name="ldschurch-stream-api",state="idle"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'No idle database connections'
+          description: 'Database connection pool has no idle connections available'
+
+      - alert: HighDatabaseConnections
+        expr: db_client_connections_usage{service_name="ldschurch-stream-api",state="used"} > 15
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High database connection usage'
+          description: '{{ $value }} database connections in use'
+
+      # Resource Alerts
+      - alert: HighRequestRate
+        expr: rate(http_server_duration_count{service_name="ldschurch-stream-api"}[5m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High request rate'
+          description: 'Request rate is {{ $value }} requests/second for the last 5 minutes'
+
+      # Sunday Stream Day Alerts (more sensitive on Sundays)
+      - alert: SundayStreamIssues
+        expr: |
+          (
+            rate(stream_events_created_total{service_name="ldschurch-stream-api",status="failed"}[5m]) > 0
+            or
+            rate(attendance_submissions_total{service_name="ldschurch-stream-api"}[30m]) == 0
+          ) and on() (day_of_week() == 0)
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Sunday stream issues detected'
+          description: 'Stream creation failures or no attendance submissions on Sunday'
