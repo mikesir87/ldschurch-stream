@@ -1,5 +1,7 @@
 import React from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 const AttendanceFilters = ({ streams, dateFilter, setDateFilter, nameFilter, setNameFilter }) => {
   const streamDates = streams

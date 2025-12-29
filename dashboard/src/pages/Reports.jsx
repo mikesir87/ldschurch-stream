@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Alert } from 'react-bootstrap';
+import Card from 'react-bootstrap/Card';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Alert from 'react-bootstrap/Alert';
 import { useUnit } from '../context/UnitContext';
 import { streamService } from '../services/api';
 import AttendanceTrends from '../components/AttendanceTrends';

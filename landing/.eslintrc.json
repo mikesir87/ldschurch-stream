@@ -15,7 +15,18 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "warn",
-    "react/no-unescaped-entities": "off"
+    "react/no-unescaped-entities": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "react-bootstrap",
+            "message": "Import specific components from 'react-bootstrap/ComponentName' instead to reduce bundle size."
+          }
+        ]
+      }
+    ]
   },
   "settings": {
     "react": {

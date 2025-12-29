@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Spinner, Form } from 'react-bootstrap';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
+import Form from 'react-bootstrap/Form';
 import { initializeApi } from '../services/api';
 import { extractSubdomain } from '../utils/subdomain';
 

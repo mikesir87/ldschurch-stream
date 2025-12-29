@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Spinner, Alert } from 'react-bootstrap';
+import Card from 'react-bootstrap/Card';
+import Spinner from 'react-bootstrap/Spinner';
+import Alert from 'react-bootstrap/Alert';
 import { useUnit } from '../context/UnitContext';
 import { streamService } from '../services/api';
 import AttendanceFilters from './AttendanceFilters';

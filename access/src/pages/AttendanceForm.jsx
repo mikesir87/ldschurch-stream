@@ -1,19 +1,22 @@
-import React, { useState } from 'react'
-import { Card, Form, Button, Alert } from 'react-bootstrap'
-import { useAttendance } from '../context/AttendanceContext'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
+import { useAttendance } from '../context/AttendanceContext';
+import { useNavigate } from 'react-router-dom';
 
 const AttendanceForm = () => {
-  const { submitAttendance, loading } = useAttendance()
-  const navigate = useNavigate()
-  const [attendanceCount, setAttendanceCount] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const { submitAttendance, loading } = useAttendance();
+  const navigate = useNavigate();
+  const [attendanceCount, setAttendanceCount] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    await submitAttendance({ count: parseInt(attendanceCount) })
-    setSubmitted(true)
-  }
+  const handleSubmit = async e => {
+    e.preventDefault();
+    await submitAttendance({ count: parseInt(attendanceCount) });
+    setSubmitted(true);
+  };
 
   if (submitted) {
     return (
@@ -23,12 +26,10 @@ const AttendanceForm = () => {
             <h5>Thank you!</h5>
             <p>Your attendance has been recorded.</p>
           </Alert>
-          <Button onClick={() => navigate('/')}>
-            Return to Stream
-          </Button>
+          <Button onClick={() => navigate('/')}>Return to Stream</Button>
         </Card.Body>
       </Card>
-    )
+    );
   }
 
   return (
@@ -44,14 +45,14 @@ const AttendanceForm = () => {
               type="number"
               min="1"
               value={attendanceCount}
-              onChange={(e) => setAttendanceCount(e.target.value)}
+              onChange={e => setAttendanceCount(e.target.value)}
               required
             />
             <Form.Text className="text-muted">
               Please count all family members participating in the meeting.
             </Form.Text>
           </Form.Group>
-          
+
           <div className="d-grid gap-2">
             <Button type="submit" variant="primary" disabled={loading}>
               {loading ? 'Submitting...' : 'Submit Attendance'}
@@ -63,7 +64,7 @@ const AttendanceForm = () => {
         </Form>
       </Card.Body>
     </Card>
-  )
-}
+  );
+};
 
-export default AttendanceForm
+export default AttendanceForm;

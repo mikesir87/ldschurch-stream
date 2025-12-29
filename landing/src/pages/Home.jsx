@@ -1,5 +1,9 @@
-import React from 'react'
-import { Container, Row, Col, Card, Button } from 'react-bootstrap'
+import React from 'react';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
 
 const Home = () => {
   return (
@@ -55,7 +59,7 @@ const Home = () => {
         </Row>
       </Container>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

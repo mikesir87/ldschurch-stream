@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table } from 'react-bootstrap';
+import Table from 'react-bootstrap/Table';
 
 const AttendanceTable = ({ attendance, nameFilter }) => {
   const filteredAttendance = attendance.filter(record =>

@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Button, Alert, Row, Col } from 'react-bootstrap';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { getApi } from '../services/api';
 
 const Admin = () => {

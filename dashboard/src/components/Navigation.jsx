@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Nav, Button, Dropdown } from 'react-bootstrap';
+import Nav from 'react-bootstrap/Nav';
+import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

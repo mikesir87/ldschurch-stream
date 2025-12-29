@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import Container from 'react-bootstrap/Container';
 import { AttendanceProvider } from './context/AttendanceContext';
 import StreamAccess from './pages/StreamAccess';
 import KonamiCode from './components/KonamiCode';

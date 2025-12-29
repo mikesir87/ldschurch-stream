@@ -1,5 +1,8 @@
-import React from 'react'
-import { Container, Row, Col, Alert } from 'react-bootstrap'
+import React from 'react';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Alert from 'react-bootstrap/Alert';
 
 const About = () => {
   return (
@@ -7,9 +10,9 @@ const About = () => {
       <Row>
         <Col lg={8} className="mx-auto">
           <h1>About LDSChurch.Stream</h1>
-          
+
           <p>
-            LDSChurch.Stream is a tool designed to help congregations of The Church of Jesus Christ 
+            LDSChurch.Stream is a tool designed to help congregations of The Church of Jesus Christ
             of Latter-Day Saints provide YouTube streams of their sacrament meetings.
           </p>
 
@@ -30,12 +33,13 @@ const About = () => {
           </ul>
 
           <Alert variant="info">
-            <strong>Note:</strong> This is not an official product of The Church of Jesus Christ of Latter-Day Saints.
+            <strong>Note:</strong> This is not an official product of The Church of Jesus Christ of
+            Latter-Day Saints.
           </Alert>
         </Col>
       </Row>
     </Container>
-  )
-}
+  );
+};
 
-export default About
+export default About;
