@@ -13,7 +13,7 @@ const getStreams = async (req, res, next) => {
       query.status = status;
     }
 
-    const streams = await StreamEvent.find(query).sort({ scheduledDate: -1 }).limit(50);
+    const streams = await StreamEvent.find(query).sort({ scheduledDate: 1 }).limit(50);
 
     res.json(streams);
   } catch (error) {
