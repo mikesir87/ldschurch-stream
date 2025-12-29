@@ -38,8 +38,27 @@ const createStream = async (req, res, next) => {
       throw new AppError('Unit not found', 404, 'UNIT_NOT_FOUND');
     }
 
-    // Combine date and time with timezone
-    const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}:00`);
+    // Parse time from 12-hour format to 24-hour format
+    const parseTime = timeStr => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':');
+      let hour24 = parseInt(hours);
+
+      if (period === 'PM' && hour24 !== 12) hour24 += 12;
+      if (period === 'AM' && hour24 === 12) hour24 = 0;
+
+      return `${hour24.toString().padStart(2, '0')}:${minutes}`;
+    };
+
+    const time24 = parseTime(scheduledTime);
+    // Create date in the specified timezone and convert to UTC
+    const localDateStr = `${scheduledDate}T${time24}:00`;
+    // Use a temporary date to get the offset for the target timezone
+    const tempDate = new Date(localDateStr);
+    const utcTime = new Date(tempDate.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const targetTime = new Date(tempDate.toLocaleString('en-US', { timeZone: timezone }));
+    const offset = utcTime.getTime() - targetTime.getTime();
+    const scheduledDateTime = new Date(tempDate.getTime() + offset);
 
     const streamData = {
       unitId,
