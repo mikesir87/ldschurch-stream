@@ -53,6 +53,22 @@ services:
       - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
       - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
 
+  youtube-mock:
+    build: ./youtube-mock
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.youtube-mock.rule=Host(`youtube-mock.traefik.me`)'
+      - 'traefik.http.services.youtube-mock.loadbalancer.server.port=3001'
+    develop:
+      watch:
+        - action: sync
+          path: ./youtube-mock
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./youtube-mock/package.json
+
   api:
     build:
       context: ./api
@@ -63,6 +79,10 @@ services:
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
+      - YOUTUBE_CLIENT_ID=placeholder-client-id
+      - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
+      - YOUTUBE_ACCESS_TOKEN=placeholder-access-token
+      - YOUTUBE_REFRESH_TOKEN=placeholder-refresh-token
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'
@@ -71,6 +91,8 @@ services:
       mongodb:
         condition: service_healthy
       mailhog:
+        condition: service_started
+      youtube-mock:
         condition: service_started
     develop:
       watch:

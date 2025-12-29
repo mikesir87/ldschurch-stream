@@ -3,6 +3,7 @@ const AttendanceRecord = require('../models/AttendanceRecord');
 const Unit = require('../models/Unit');
 const User = require('../models/User');
 const { AppError } = require('../middleware/errorHandler');
+const youtubeService = require('../services/youtubeService');
 
 const getUserUnits = async (req, res, next) => {
   try {
@@ -114,10 +115,17 @@ const createStream = async (req, res, next) => {
       streamData.specialEventMessage = specialEventMessage;
       streamData.status = 'scheduled';
     } else {
-      // TODO: Integrate with YouTube API to create live event
-      streamData.youtubeEventId = `mock-event-${Date.now()}`;
-      streamData.youtubeStreamUrl = `https://youtube.com/watch?v=mock-${Date.now()}`;
-      streamData.streamKey = `${unit.subdomain}-${Date.now()}`;
+      // Create YouTube Live event
+      try {
+        const title = `${unit.name} - ${scheduledDate}`;
+        const youtubeEvent = await youtubeService.createLiveEvent(title, scheduledDateTime);
+
+        streamData.youtubeEventId = youtubeEvent.eventId;
+        streamData.youtubeStreamUrl = youtubeEvent.streamUrl;
+        streamData.streamKey = youtubeEvent.streamKey;
+      } catch (error) {
+        throw new AppError('Failed to create YouTube Live event', 500, 'YOUTUBE_API_ERROR');
+      }
     }
 
     const streamEvent = await StreamEvent.create(streamData);
@@ -224,6 +232,16 @@ const deleteStream = async (req, res, next) => {
     const stream = await StreamEvent.findOne({ _id: streamId, unitId });
     if (!stream) {
       throw new AppError('Stream not found', 404, 'STREAM_NOT_FOUND');
+    }
+
+    // Delete YouTube event if it exists
+    if (stream.youtubeEventId) {
+      try {
+        await youtubeService.deleteEvent(stream.youtubeEventId);
+      } catch (error) {
+        // Log but don't fail the deletion if YouTube cleanup fails
+        console.warn('Failed to delete YouTube event:', error.message);
+      }
     }
 
     // Delete associated attendance records

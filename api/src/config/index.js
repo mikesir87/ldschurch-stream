@@ -35,6 +35,10 @@ module.exports = {
     clientSecret:
       readSecret(process.env.YOUTUBE_CLIENT_SECRET_FILE) || process.env.YOUTUBE_CLIENT_SECRET,
     channelId: process.env.YOUTUBE_CHANNEL_ID,
+    accessToken:
+      readSecret(process.env.YOUTUBE_ACCESS_TOKEN_FILE) || process.env.YOUTUBE_ACCESS_TOKEN,
+    refreshToken:
+      readSecret(process.env.YOUTUBE_REFRESH_TOKEN_FILE) || process.env.YOUTUBE_REFRESH_TOKEN,
   },
 
   email: {
