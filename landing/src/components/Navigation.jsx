@@ -8,7 +8,9 @@ const Navigation = () => {
   return (
     <Navbar bg="primary" variant="dark" expand="lg">
       <Container>
-        <Navbar.Brand>LDSChurch.Stream</Navbar.Brand>
+        <Navbar.Brand className="brand-name">
+          LDSChurch<span className="stream-suffix">.Stream</span>
+        </Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse>
           <Nav className="me-auto">

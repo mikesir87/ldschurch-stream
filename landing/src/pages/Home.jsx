@@ -12,7 +12,9 @@ const Home = () => {
         <Container>
           <Row>
             <Col lg={8} className="mx-auto text-center">
-              <h1 className="display-4">LDSChurch.Stream</h1>
+              <h1 className="display-4 brand-name">
+                LDSChurch<span className="stream-suffix">.Stream</span>
+              </h1>
               <p className="lead">
                 Help your congregation provide YouTube streams of sacrament meetings
               </p>

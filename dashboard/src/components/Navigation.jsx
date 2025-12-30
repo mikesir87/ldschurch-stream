@@ -31,7 +31,9 @@ const Navigation = () => {
       <div className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <img src="/logos/logo-white.svg" alt="LDSChurch.Stream" className="logo" />
-          <h5 className="mb-0">LDSChurch.Stream</h5>
+          <h5 className="mb-0 brand-name">
+            LDSChurch<span className="stream-suffix">.Stream</span>
+          </h5>
           <button className="sidebar-close d-lg-none" onClick={() => setIsOpen(false)}>
             <i className="bi-x"></i>
           </button>

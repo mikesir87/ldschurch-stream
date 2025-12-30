@@ -34,7 +34,9 @@ const Login = () => {
           <div className="text-center text-white mb-4">
             <div className="login-title-row mb-3">
               <img src="/logos/logo-white.svg" alt="LDSChurch.Stream" className="logo" />
-              <h1>LDSChurch.Stream</h1>
+              <h1 className="brand-name">
+                LDSChurch<span className="stream-suffix">.Stream</span>
+              </h1>
             </div>
             <p className="lead">Dashboard Login</p>
           </div>
