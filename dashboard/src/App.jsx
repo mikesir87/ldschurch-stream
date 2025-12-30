@@ -6,6 +6,7 @@ import { UnitProvider } from './context/UnitContext';
 import { StreamProvider } from './context/StreamContext';
 import { initializeApi } from './services/api';
 import Navigation from './components/Navigation';
+import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
 import UnitSettings from './pages/UnitSettings';
@@ -28,14 +29,15 @@ function AppContent() {
         <Router>
           <div className="app-layout">
             <Navigation />
-            <main className="main-content">
+            <div className="main-content d-flex flex-column flex-grow-1">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<UnitSettings />} />
                 {user.role === 'global_admin' && <Route path="/admin" element={<Admin />} />}
               </Routes>
-            </main>
+              <Footer />
+            </div>
           </div>
           <KonamiCode />
         </Router>

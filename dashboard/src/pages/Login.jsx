@@ -28,8 +28,8 @@ const Login = () => {
   };
 
   return (
-    <div className="login-background">
-      <Container className="py-5">
+    <div className="login-background d-flex flex-column min-vh-100">
+      <Container className="py-5 flex-grow-1 d-flex flex-column justify-content-center">
         <div className="login-container">
           <div className="text-center text-white mb-4">
             <div className="login-title-row mb-3">
@@ -72,6 +72,13 @@ const Login = () => {
               </Form>
             </Card.Body>
           </Card>
+
+          <div className="text-center mt-3">
+            <small className="text-muted">
+              This site is not an official website of The Church of Jesus Christ of Latter-Day
+              Saints
+            </small>
+          </div>
         </div>
       </Container>
     </div>
