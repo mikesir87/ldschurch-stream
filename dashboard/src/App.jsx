@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -12,6 +13,7 @@ import Reports from './pages/Reports';
 import UnitSettings from './pages/UnitSettings';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import KonamiCode from './components/KonamiCode';
 
 function AppContent() {
@@ -19,30 +21,44 @@ function AppContent() {
 
   if (loading) return <div>Loading...</div>;
 
-  if (!user) {
-    return <Login />;
-  }
-
   return (
-    <UnitProvider>
-      <StreamProvider>
-        <Router>
-          <div className="app-layout">
-            <Navigation />
-            <div className="main-content d-flex flex-column flex-grow-1">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/settings" element={<UnitSettings />} />
-                {user.role === 'global_admin' && <Route path="/admin" element={<Admin />} />}
-              </Routes>
-              <Footer />
-            </div>
-          </div>
-          <KonamiCode />
-        </Router>
-      </StreamProvider>
-    </UnitProvider>
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/invite/:token" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected routes */}
+        {user ? (
+          <Route
+            path="/*"
+            element={
+              <UnitProvider>
+                <StreamProvider>
+                  <div className="app-layout">
+                    <Navigation />
+                    <div className="main-content d-flex flex-column flex-grow-1">
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/reports" element={<Reports />} />
+                        <Route path="/settings" element={<UnitSettings />} />
+                        {user.role === 'global_admin' && (
+                          <Route path="/admin" element={<Admin />} />
+                        )}
+                      </Routes>
+                      <Footer />
+                    </div>
+                  </div>
+                  <KonamiCode />
+                </StreamProvider>
+              </UnitProvider>
+            }
+          />
+        ) : (
+          <Route path="*" element={<Login />} />
+        )}
+      </Routes>
+    </Router>
   );
 }
 
@@ -77,5 +93,9 @@ function AuthInitializer({ config }) {
 
   return <AppContent />;
 }
+
+AuthInitializer.propTypes = {
+  config: PropTypes.object.isRequired,
+};
 
 export default App;

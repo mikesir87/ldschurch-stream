@@ -67,7 +67,7 @@ This API provides the backbone for all of the other components and is the only s
 
 ## Onboarding new units
 
-Since this application is just starting, we are not including a self-serve enrollment process. Instead, the _global admin_ user can create a new unit. From there, they are given a short-lived invite link that can be sent out. Upon visiting the link and authenticating, the user is assigned as a stream specialist for the new unit.
+Since this application is just starting, we are not including a self-serve enrollment process. Instead, the _global admin_ user can create a new unit and then invite specialists by email. The admin enters the specialist's email address, and the system automatically sends a professional invitation email with a registration link. The specialist clicks the link, completes their registration (with the email pre-populated), and is automatically assigned to the correct unit. This flow validates email ownership and ensures secure onboarding.
 
 ## Church guidelines
 

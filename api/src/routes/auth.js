@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/auth');
 
 router.post('/login', authController.login);
+router.get('/invite/:token', authController.getInviteDetails);
 router.post('/register-with-invite', authController.registerWithInvite);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authController.logout);

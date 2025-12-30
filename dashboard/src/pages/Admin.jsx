@@ -1,14 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Table from 'react-bootstrap/Table';
+import Modal from 'react-bootstrap/Modal';
 import { getApi } from '../services/api';
 
 const Admin = () => {
   const [loading, setLoading] = useState({});
   const [messages, setMessages] = useState({});
+  const [units, setUnits] = useState([]);
+  const [newUnit, setNewUnit] = useState({ name: '', subdomain: '' });
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+
+  useEffect(() => {
+    loadUnits();
+  }, []);
+
+  const loadUnits = async () => {
+    try {
+      const response = await getApi().get('/api/admin/units');
+      setUnits(response.data);
+    } catch (error) {
+      console.error('Failed to load units:', error);
+    }
+  };
+
+  const handleCreateUnit = async e => {
+    e.preventDefault();
+    setLoading(prev => ({ ...prev, createUnit: true }));
+    setMessages(prev => ({ ...prev, createUnit: null }));
+
+    try {
+      await getApi().post('/api/admin/units', newUnit);
+      setMessages(prev => ({
+        ...prev,
+        createUnit: { type: 'success', text: 'Unit created successfully!' },
+      }));
+      setNewUnit({ name: '', subdomain: '' });
+      loadUnits(); // Refresh the units list
+    } catch (error) {
+      setMessages(prev => ({
+        ...prev,
+        createUnit: {
+          type: 'danger',
+          text: error.response?.data?.error?.message || 'Failed to create unit',
+        },
+      }));
+    } finally {
+      setLoading(prev => ({ ...prev, createUnit: false }));
+    }
+  };
+
+  const handleInviteSpecialist = unit => {
+    setSelectedUnit(unit);
+    setInviteEmail('');
+    setShowInviteModal(true);
+  };
+
+  const handleSendInvite = async e => {
+    e.preventDefault();
+    setLoading(prev => ({ ...prev, sendInvite: true }));
+
+    try {
+      await getApi().post(`/api/admin/units/${selectedUnit._id}/invite`, { email: inviteEmail });
+      setMessages(prev => ({
+        ...prev,
+        invite: { type: 'success', text: `Invite sent to ${inviteEmail}` },
+      }));
+      setShowInviteModal(false);
+      setInviteEmail('');
+    } catch (error) {
+      setMessages(prev => ({
+        ...prev,
+        invite: {
+          type: 'danger',
+          text: error.response?.data?.error?.message || 'Failed to send invite',
+        },
+      }));
+    } finally {
+      setLoading(prev => ({ ...prev, sendInvite: false }));
+    }
+  };
 
   const triggerJob = async (jobType, endpoint, description) => {
     setLoading(prev => ({ ...prev, [jobType]: true }));
@@ -36,7 +114,104 @@ const Admin = () => {
   return (
     <div>
       <h2>System Administration</h2>
-      <p className="text-muted">Manually trigger system jobs and processes</p>
+      <p className="text-muted">Manage units and trigger system jobs</p>
+
+      <Row>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Header>
+              <h5>Create New Unit</h5>
+            </Card.Header>
+            <Card.Body>
+              <Form onSubmit={handleCreateUnit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Unit Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="e.g., Blacksburg Ward"
+                    value={newUnit.name}
+                    onChange={e => setNewUnit(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Subdomain</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="e.g., blacksburg-va"
+                    value={newUnit.subdomain}
+                    onChange={e => setNewUnit(prev => ({ ...prev, subdomain: e.target.value }))}
+                    pattern="[a-z0-9-]+"
+                    title="Only lowercase letters, numbers, and hyphens allowed"
+                    required
+                  />
+                  <Form.Text className="text-muted">
+                    Only lowercase letters, numbers, and hyphens. Will be used as:{' '}
+                    {newUnit.subdomain}.ldschurch.stream
+                  </Form.Text>
+                </Form.Group>
+                {messages.createUnit && (
+                  <Alert variant={messages.createUnit.type}>{messages.createUnit.text}</Alert>
+                )}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={loading.createUnit || !newUnit.name.trim() || !newUnit.subdomain.trim()}
+                >
+                  {loading.createUnit ? 'Creating...' : 'Create Unit'}
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Header>
+              <h5>Existing Units</h5>
+            </Card.Header>
+            <Card.Body>
+              {messages.invite && (
+                <Alert variant={messages.invite.type} className="mb-3">
+                  {messages.invite.text}
+                </Alert>
+              )}
+              {units.length === 0 ? (
+                <p className="text-muted">No units found.</p>
+              ) : (
+                <Table striped size="sm">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Subdomain</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {units.map(unit => (
+                      <tr key={unit._id}>
+                        <td>{unit.name}</td>
+                        <td>{unit.subdomain}</td>
+                        <td>{new Date(unit.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <Button
+                            size="sm"
+                            variant="outline-primary"
+                            onClick={() => handleInviteSpecialist(unit)}
+                          >
+                            Invite Specialist
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       <Row>
         <Col md={6}>
@@ -107,6 +282,46 @@ const Admin = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Invite Specialist Modal */}
+      <Modal show={showInviteModal} onHide={() => setShowInviteModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Invite Stream Specialist</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSendInvite}>
+          <Modal.Body>
+            <p>
+              Send an invitation to become a stream specialist for{' '}
+              <strong>{selectedUnit?.name}</strong>.
+            </p>
+            <Form.Group>
+              <Form.Label>Email Address</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="specialist@example.com"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                required
+              />
+              <Form.Text className="text-muted">
+                An invitation email will be sent with registration instructions.
+              </Form.Text>
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowInviteModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={loading.sendInvite || !inviteEmail.trim()}
+            >
+              {loading.sendInvite ? 'Sending...' : 'Send Invite'}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 };

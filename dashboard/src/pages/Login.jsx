@@ -5,13 +5,18 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { login } = useAuth();
+
+  const showRegistrationSuccess = searchParams.get('registered') === 'true';
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -20,7 +25,9 @@ const Login = () => {
 
     const result = await login(email, password);
 
-    if (!result.success) {
+    if (result.success) {
+      navigate('/');
+    } else {
       setError(result.error);
     }
 
@@ -43,6 +50,11 @@ const Login = () => {
 
           <Card className="login-card">
             <Card.Body>
+              {showRegistrationSuccess && (
+                <Alert variant="success">
+                  Registration completed successfully! Please log in with your new account.
+                </Alert>
+              )}
               {error && <Alert variant="danger">{error}</Alert>}
 
               <Form onSubmit={handleSubmit}>

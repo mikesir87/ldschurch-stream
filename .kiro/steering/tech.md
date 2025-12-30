@@ -396,6 +396,7 @@ spec:
 {
   _id: ObjectId,
   token: String, // UUID
+  email: String, // invited email address
   unitId: ObjectId,
   createdBy: ObjectId, // global admin user
   expiresAt: Date,
@@ -444,6 +445,7 @@ updatedAt: Date
 - `POST /api/auth/login` - Authenticate user
 - `POST /api/auth/refresh` - Refresh JWT token
 - `POST /api/auth/logout` - Invalidate refresh token
+- `GET /api/auth/invite/:token` - Get invite token details (email, unit name)
 - `POST /api/auth/register-with-invite` - Register using invite token
 
 ### Unit Management (Global Admin)

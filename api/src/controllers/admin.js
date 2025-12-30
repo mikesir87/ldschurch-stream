@@ -6,6 +6,7 @@ const { AppError } = require('../middleware/errorHandler');
 const youtubeBatchProcessor = require('../jobs/youtubeBatchProcessor');
 const reportGenerator = require('../jobs/reportGenerator');
 const { setupTestData } = require('../scripts/setupTestReportData');
+const emailService = require('../services/emailService');
 
 const getUnits = async (req, res, next) => {
   try {
@@ -34,6 +35,11 @@ const createUnit = async (req, res, next) => {
 const createInviteToken = async (req, res, next) => {
   try {
     const { unitId } = req.params;
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError('Email address is required', 400, 'EMAIL_REQUIRED');
+    }
 
     const unit = await Unit.findById(unitId);
     if (!unit) {
@@ -46,15 +52,26 @@ const createInviteToken = async (req, res, next) => {
 
     const inviteToken = await InviteToken.create({
       token,
+      email,
       unitId,
       createdBy: req.user.id,
       expiresAt,
     });
 
+    const inviteUrl = `${req.protocol}://dashboard.${req.get('host').replace('api.', '')}/invite/${token}`;
+
+    // Send invite email
+    await emailService.sendInviteEmail(email, {
+      token,
+      unitName: unit.name,
+      inviteUrl,
+      expiresAt,
+    });
+
     res.status(201).json({
-      token: inviteToken.token,
+      message: 'Invite sent successfully',
+      email,
       expiresAt: inviteToken.expiresAt,
-      inviteUrl: `${req.protocol}://${req.get('host')}/invite/${token}`,
     });
   } catch (error) {
     next(error);

@@ -67,6 +67,30 @@ const login = async (req, res, next) => {
   }
 };
 
+const getInviteDetails = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    const inviteToken = await InviteToken.findOne({
+      token,
+      isActive: true,
+      expiresAt: { $gt: new Date() },
+    }).populate('unitId', 'name');
+
+    if (!inviteToken) {
+      throw new AppError('Invalid or expired invite token', 400, 'INVALID_INVITE');
+    }
+
+    res.json({
+      email: inviteToken.email,
+      unitName: inviteToken.unitId.name,
+      expiresAt: inviteToken.expiresAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const registerWithInvite = async (req, res, next) => {
   try {
     const { token, email, name, password } = req.body;
@@ -166,6 +190,7 @@ const logout = (req, res) => {
 
 module.exports = {
   login,
+  getInviteDetails,
   registerWithInvite,
   refresh,
   logout,

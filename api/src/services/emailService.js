@@ -18,6 +18,36 @@ class EmailService {
     });
   }
 
+  async sendInviteEmail(email, inviteData) {
+    try {
+      const mailOptions = {
+        from: config.email.from,
+        to: email,
+        subject: `Invitation to Join ${inviteData.unitName} - LDSChurch.Stream`,
+        html: this.generateInviteHtml(inviteData),
+      };
+
+      await this.transporter.sendMail(mailOptions);
+
+      logger.info('Invite email sent', {
+        email,
+        unitName: inviteData.unitName,
+        token: inviteData.token,
+      });
+
+      recordEmailSent('invite', true);
+    } catch (error) {
+      logger.error('Failed to send invite email', {
+        error: error.message,
+        email,
+        unitName: inviteData.unitName,
+      });
+
+      recordEmailSent('invite', false);
+      throw error;
+    }
+  }
+
   async sendAttendanceReport(recipients, report) {
     try {
       const mailOptions = {
@@ -44,6 +74,37 @@ class EmailService {
       recordEmailSent('attendance_report', false);
       throw error;
     }
+  }
+
+  generateInviteHtml(inviteData) {
+    return `
+      <h2>You're Invited to Join LDSChurch.Stream</h2>
+      <p>Hello!</p>
+      <p>You've been invited to become a stream specialist for <strong>${inviteData.unitName}</strong>.</p>
+      <p>LDSChurch.Stream helps LDS congregations provide YouTube streams of their sacrament meetings with simplified management and automated reporting.</p>
+      
+      <p><strong>To get started:</strong></p>
+      <ol>
+        <li>Click the link below to complete your registration</li>
+        <li>Create your account using this email address</li>
+        <li>Start managing streams for your unit</li>
+      </ol>
+      
+      <p style="margin: 20px 0;">
+        <a href="${inviteData.inviteUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          Complete Registration
+        </a>
+      </p>
+      
+      <p><strong>Important:</strong> This invitation expires on ${new Date(inviteData.expiresAt).toLocaleDateString()} at ${new Date(inviteData.expiresAt).toLocaleTimeString()}.</p>
+      
+      <p>If you have any questions, please contact your local leadership.</p>
+      
+      <hr>
+      <p style="font-size: 12px; color: #666;">
+        This is an automated message from LDSChurch.Stream. This application is not an official product of The Church of Jesus Christ of Latter-Day Saints.
+      </p>
+    `;
   }
 
   generateReportHtml(report) {
