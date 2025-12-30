@@ -2141,6 +2141,43 @@ ldschurch-stream/
     └── package.json         # Access app dependencies and scripts
 ```
 
+## Development Workflow Guidelines
+
+### Container-Based Development
+
+**IMPORTANT**: This application runs entirely in Docker containers with Compose Watch for hot reloading. When making changes:
+
+- **File changes are automatically synced** - No manual restarts needed for most code changes
+- **Package.json changes trigger rebuilds** - Compose Watch handles dependency updates automatically
+- **No host npm commands** - All npm operations happen inside containers
+- **No manual container restarts** - Compose Watch manages the development lifecycle
+
+### Making Changes
+
+```bash
+# ✅ Correct: Edit files directly, changes sync automatically
+vim api/src/controllers/streams.js
+
+# ✅ Correct: Add dependencies (triggers automatic rebuild)
+echo '"new-package": "^1.0.0"' >> api/package.json
+
+# ❌ Avoid: Manual npm commands on host
+npm install  # Don't do this
+
+# ❌ Avoid: Manual container restarts
+docker compose restart api  # Usually unnecessary
+
+# ✅ Only restart if containers are stuck/corrupted
+docker compose up --watch  # Restart entire stack if needed
+```
+
+### When Restarts ARE Needed
+
+- Environment variable changes in compose.yaml
+- Docker configuration changes (Dockerfile, compose.yaml)
+- Database schema changes requiring migration
+- Container corruption or networking issues
+
 ## API Documentation
 
 ### OpenAPI Documentation Setup
