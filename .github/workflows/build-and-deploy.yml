@@ -68,9 +68,6 @@ jobs:
     if: github.event_name != 'pull_request'
     outputs:
       image-tag: ${{ steps.timestamp.outputs.tag }}
-    strategy:
-      matrix:
-        service: [api, dashboard, access, landing]
 
     steps:
       - name: Checkout
@@ -92,15 +89,13 @@ jobs:
         id: timestamp
         run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - name: Build and push all services
+        uses: docker/bake-action@v4
         with:
-          context: ./${{ matrix.service }}
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-${{ matrix.service }}:${{ steps.timestamp.outputs.tag }}
-            ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-${{ matrix.service }}:latest
+        env:
+          TAG: ${{ steps.timestamp.outputs.tag }}
+          REGISTRY_USER: ${{ secrets.DOCKER_USERNAME }}
 
   deploy:
     needs: build
