@@ -120,17 +120,24 @@ jobs:
           sed -i "s|mikesir87/ldschurch-stream-access:.*|${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-access:${{ steps.timestamp.outputs.tag }}|g" k8s/access-deployment.yaml
           sed -i "s|mikesir87/ldschurch-stream-landing:.*|${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-landing:${{ steps.timestamp.outputs.tag }}|g" k8s/landing-deployment.yaml
 
-      - name: Deploy to Kubernetes
-        uses: azure/k8s-deploy@v1
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set kubectl context
+        uses: azure/k8s-set-context@v4
         with:
-          # k8s/api-deployment.yaml
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy to Kubernetes
+        uses: azure/k8s-deploy@v5
+        with:
           manifests: |
             k8s/namespace.yaml
             k8s/secrets.yaml
             k8s/cloudflare-issuer.yaml
             k8s/mongodb.yaml
+            k8s/api-deployment.yaml
             k8s/dashboard-deployment.yaml
             k8s/access-deployment.yaml
             k8s/landing-deployment.yaml
             k8s/ingress.yaml
-          kubeconfig: ${{ secrets.KUBECONFIG }}
