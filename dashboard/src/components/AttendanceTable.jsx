@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Table from 'react-bootstrap/Table';
 
 const AttendanceTable = ({ attendance, nameFilter }) => {
@@ -55,6 +56,11 @@ const AttendanceTable = ({ attendance, nameFilter }) => {
       )}
     </>
   );
+};
+
+AttendanceTable.propTypes = {
+  attendance: PropTypes.array.isRequired,
+  nameFilter: PropTypes.string.isRequired,
 };
 
 export default AttendanceTable;

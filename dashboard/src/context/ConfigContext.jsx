@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 const ConfigContext = createContext();
 
@@ -29,4 +30,8 @@ export const ConfigProvider = ({ children }) => {
   return (
     <ConfigContext.Provider value={{ config, loading, error }}>{children}</ConfigContext.Provider>
   );
+};
+
+ConfigProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

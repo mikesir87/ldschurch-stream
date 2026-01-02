@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -58,6 +59,10 @@ const AttendanceTrends = ({ trendsData }) => {
       <Line data={data} options={options} />
     </div>
   );
+};
+
+AttendanceTrends.propTypes = {
+  trendsData: PropTypes.array.isRequired,
 };
 
 export default AttendanceTrends;

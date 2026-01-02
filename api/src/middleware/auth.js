@@ -10,8 +10,8 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({
       error: {
         code: 'MISSING_TOKEN',
-        message: 'Access token required'
-      }
+        message: 'Access token required',
+      },
     });
   }
 
@@ -21,8 +21,8 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({
         error: {
           code: 'INVALID_TOKEN',
-          message: 'Invalid or expired token'
-        }
+          message: 'Invalid or expired token',
+        },
       });
     }
 
@@ -33,7 +33,7 @@ const authenticateToken = (req, res, next) => {
 
 const authorizeUnit = (req, res, next) => {
   const unitId = req.params.unitId;
-  
+
   if (req.user.role === 'global_admin') {
     return next();
   }
@@ -42,8 +42,8 @@ const authorizeUnit = (req, res, next) => {
     return res.status(403).json({
       error: {
         code: 'UNAUTHORIZED_UNIT',
-        message: 'Access denied for this unit'
-      }
+        message: 'Access denied for this unit',
+      },
     });
   }
 
@@ -55,8 +55,8 @@ const requireGlobalAdmin = (req, res, next) => {
     return res.status(403).json({
       error: {
         code: 'ADMIN_REQUIRED',
-        message: 'Global admin access required'
-      }
+        message: 'Global admin access required',
+      },
     });
   }
   next();
@@ -65,5 +65,5 @@ const requireGlobalAdmin = (req, res, next) => {
 module.exports = {
   authenticateToken,
   authorizeUnit,
-  requireGlobalAdmin
+  requireGlobalAdmin,
 };

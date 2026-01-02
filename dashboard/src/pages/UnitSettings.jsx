@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -19,9 +19,9 @@ const UnitSettings = () => {
     if (selectedUnit) {
       loadSettings();
     }
-  }, [selectedUnit]);
+  }, [selectedUnit, loadSettings]);
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const api = getApi();
       const response = await api.get(`/api/units/${selectedUnit._id}/settings`);
@@ -31,7 +31,7 @@ const UnitSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedUnit]);
 
   const addEmail = () => {
     if (newEmail && !leadershipEmails.includes(newEmail)) {

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { streamService } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useUnit } from './UnitContext';
@@ -22,7 +23,7 @@ export const StreamProvider = ({ children }) => {
 
   const unitId = selectedUnit?._id;
 
-  const loadStreams = async () => {
+  const loadStreams = useCallback(async () => {
     if (!unitId) return;
 
     try {
@@ -35,7 +36,7 @@ export const StreamProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [unitId]);
 
   const createStream = async streamData => {
     if (!unitId) return;
@@ -75,7 +76,7 @@ export const StreamProvider = ({ children }) => {
     } else {
       setStreams([]);
     }
-  }, [user, unitId]);
+  }, [user, unitId, loadStreams]);
 
   const value = {
     streams,
@@ -88,4 +89,8 @@ export const StreamProvider = ({ children }) => {
   };
 
   return <StreamContext.Provider value={value}>{children}</StreamContext.Provider>;
+};
+
+StreamProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

@@ -1,35 +1,36 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 
-const AttendanceContext = createContext()
+const AttendanceContext = createContext();
 
 export const useAttendance = () => {
-  const context = useContext(AttendanceContext)
+  const context = useContext(AttendanceContext);
   if (!context) {
-    throw new Error('useAttendance must be used within an AttendanceProvider')
+    throw new Error('useAttendance must be used within an AttendanceProvider');
   }
-  return context
-}
+  return context;
+};
 
 export const AttendanceProvider = ({ children }) => {
-  const [attendance, setAttendance] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [attendance, setAttendance] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const submitAttendance = async (attendanceData) => {
-    setLoading(true)
+  const submitAttendance = async attendanceData => {
+    setLoading(true);
     // API call would go here
-    setAttendance(attendanceData)
-    setLoading(false)
-  }
+    setAttendance(attendanceData);
+    setLoading(false);
+  };
 
   const value = {
     attendance,
     loading,
-    submitAttendance
-  }
+    submitAttendance,
+  };
 
-  return (
-    <AttendanceContext.Provider value={value}>
-      {children}
-    </AttendanceContext.Provider>
-  )
-}
+  return <AttendanceContext.Provider value={value}>{children}</AttendanceContext.Provider>;
+};
+
+AttendanceProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};

@@ -11,6 +11,7 @@ A tool to help congregations of The Church of Jesus Christ of Latter-Day Saints 
    - Node.js 18+ (for local development)
 
 2. **Start Development Environment**
+
    ```bash
    docker compose up --watch
    ```

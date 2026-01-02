@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -41,6 +42,14 @@ const AttendanceFilters = ({ streams, dateFilter, setDateFilter, nameFilter, set
       </Col>
     </Row>
   );
+};
+
+AttendanceFilters.propTypes = {
+  streams: PropTypes.array.isRequired,
+  dateFilter: PropTypes.string.isRequired,
+  setDateFilter: PropTypes.func.isRequired,
+  nameFilter: PropTypes.string.isRequired,
+  setNameFilter: PropTypes.func.isRequired,
 };
 
 export default AttendanceFilters;

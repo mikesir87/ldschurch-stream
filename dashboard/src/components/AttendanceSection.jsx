@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
@@ -91,6 +92,10 @@ const AttendanceSection = ({ streams }) => {
       </Card.Body>
     </Card>
   );
+};
+
+AttendanceSection.propTypes = {
+  streams: PropTypes.array.isRequired,
 };
 
 export default AttendanceSection;

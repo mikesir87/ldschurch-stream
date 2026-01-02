@@ -9,19 +9,19 @@ class AppError extends Error {
   }
 }
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   let error = { ...err };
   error.message = err.message;
 
   const requestLogger = req.logger || logger;
-  
+
   requestLogger.error('Request failed', {
     error: err.message,
     stack: err.stack,
     statusCode: error.statusCode || 500,
     code: error.code,
     userId: req.user?.id,
-    unitId: req.params?.unitId
+    unitId: req.params?.unitId,
   });
 
   if (err.name === 'ValidationError') {
@@ -43,8 +43,8 @@ const errorHandler = (err, req, res, next) => {
       code: error.code || 'INTERNAL_ERROR',
       message: error.message || 'Something went wrong',
       correlationId: req.correlationId,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    },
   });
 };
 

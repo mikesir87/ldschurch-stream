@@ -11,10 +11,14 @@
 // Custom component styles
 // Brand styling
 .brand-name {
-  font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Nunito Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-weight: 600;
   letter-spacing: -0.02em;
-  
+
   .stream-suffix {
     font-weight: 500;
     font-size: 0.85em;
@@ -26,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  
+
   .logo {
     height: 2rem;
     width: auto;
@@ -40,13 +44,15 @@
 
 .card {
   border: 1px solid $gray-200;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: $box-shadow-lg;
   }
-  
+
   .card-header {
     background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
     color: white;
@@ -57,22 +63,26 @@
 
 .btn {
   transition: all 0.2s ease-in-out;
-  
+
   &.btn-primary {
     background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%);
     border: none;
-    
+
     &:hover {
-      background: linear-gradient(135deg, darken($blue-primary, 10%) 0%, darken($blue-light, 10%) 100%);
+      background: linear-gradient(
+        135deg,
+        darken($blue-primary, 10%) 0%,
+        darken($blue-light, 10%) 100%
+      );
       transform: translateY(-1px);
       box-shadow: $box-shadow;
     }
   }
-  
+
   &.btn-outline-primary {
     border-color: $blue-primary;
     color: $blue-primary;
-    
+
     &:hover {
       background: $blue-primary;
       border-color: $blue-primary;
@@ -88,15 +98,18 @@
     font-weight: $font-weight-semibold;
     border-bottom: 2px solid $blue-light;
   }
-  
+
   tbody tr {
     transition: background-color 0.2s ease-in-out;
   }
 }
 
-.form-control, .form-select {
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  
+.form-control,
+.form-select {
+  transition:
+    border-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+
   &:focus {
     border-color: $blue-light;
     box-shadow: $input-focus-box-shadow;
@@ -105,7 +118,7 @@
 
 .badge {
   font-weight: $font-weight-medium;
-  
+
   &.bg-primary {
     background: linear-gradient(135deg, $blue-primary 0%, $blue-light 100%) !important;
   }
@@ -130,7 +143,7 @@
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  
+
   .spinner-border {
     color: $blue-primary;
   }
@@ -143,12 +156,12 @@
   padding: 2rem 0;
   margin-bottom: 2rem;
   border-radius: $border-radius-lg;
-  
+
   h1 {
     font-weight: $font-weight-bold;
     margin-bottom: 0.5rem;
   }
-  
+
   .lead {
     opacity: 0.9;
   }
@@ -158,14 +171,14 @@
   .card-body {
     padding: 2rem;
   }
-  
+
   .stats-number {
     font-size: 2.5rem;
     font-weight: $font-weight-bold;
     color: $blue-primary;
     line-height: 1;
   }
-  
+
   .stats-label {
     color: $gray-600;
     font-weight: $font-weight-medium;
@@ -181,18 +194,18 @@
   color: white;
   padding: 4rem 0;
   text-align: center;
-  
+
   .logo {
     height: 4rem;
     width: auto;
     margin-bottom: 1.5rem;
   }
-  
+
   h1 {
     font-weight: $font-weight-bold;
     margin-bottom: 1rem;
   }
-  
+
   .lead {
     opacity: 0.9;
     font-size: 1.25rem;
@@ -203,16 +216,16 @@
   .card {
     max-width: 500px;
     margin: 0 auto;
-    
+
     .card-body {
       padding: 2.5rem;
     }
   }
-  
+
   .form-group {
     margin-bottom: 1.5rem;
   }
-  
+
   .btn-primary {
     width: 100%;
     padding: 0.875rem;
@@ -227,13 +240,13 @@
   padding: 2rem;
   border-radius: $border-radius-lg;
   text-align: center;
-  
+
   .icon {
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.8;
   }
-  
+
   h3 {
     font-weight: $font-weight-bold;
     margin-bottom: 1rem;
@@ -246,25 +259,25 @@
   color: white;
   padding: 6rem 0;
   text-align: center;
-  
+
   .logo {
     height: 5rem;
     width: auto;
     margin-bottom: 2rem;
   }
-  
+
   h1 {
     font-size: 3.5rem;
     font-weight: $font-weight-bold;
     margin-bottom: 1.5rem;
   }
-  
+
   .lead {
     font-size: 1.5rem;
     opacity: 0.9;
     margin-bottom: 2.5rem;
   }
-  
+
   .btn {
     font-size: 1.25rem;
     padding: 1rem 2.5rem;
@@ -274,17 +287,17 @@
 
 .features-section {
   padding: 5rem 0;
-  
+
   .feature-card {
     text-align: center;
     padding: 2rem;
-    
+
     .feature-icon {
       font-size: 3rem;
       color: $blue-primary;
       margin-bottom: 1.5rem;
     }
-    
+
     h4 {
       font-weight: $font-weight-semibold;
       color: $blue-primary;
@@ -314,48 +327,48 @@
   .dashboard-header {
     padding: 1.5rem 0;
     margin-bottom: 1.5rem;
-    
+
     h1 {
       font-size: 2rem;
     }
   }
-  
+
   .stats-card .stats-number {
     font-size: 2rem;
   }
-  
+
   .access-hero {
     padding: 3rem 0;
-    
+
     .logo {
       height: 3rem;
     }
-    
+
     h1 {
       font-size: 2rem;
     }
-    
+
     .lead {
       font-size: 1.1rem;
     }
   }
-  
+
   .hero-section {
     padding: 4rem 0;
-    
+
     .logo {
       height: 4rem;
     }
-    
+
     h1 {
       font-size: 2.5rem;
     }
-    
+
     .lead {
       font-size: 1.25rem;
     }
   }
-  
+
   .attendance-form .card .card-body {
     padding: 2rem;
   }

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { getApi } from '../services/api';
 
 const AuthContext = createContext();
@@ -16,26 +17,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const refreshTimeoutRef = useRef(null);
 
-  const scheduleTokenRefresh = token => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiresAt = payload.exp * 1000;
-      const now = Date.now();
-      const refreshAt = expiresAt - 60000; // Refresh 1 minute before expiry
-
-      if (refreshAt > now) {
-        refreshTimeoutRef.current = setTimeout(refreshToken, refreshAt - now);
+  const scheduleTokenRefresh = useCallback(
+    token => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
       }
-    } catch (error) {
-      console.error('Failed to schedule token refresh:', error);
-    }
-  };
 
-  const refreshToken = async () => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiresAt = payload.exp * 1000;
+        const now = Date.now();
+        const refreshAt = expiresAt - 60000; // Refresh 1 minute before expiry
+
+        if (refreshAt > now) {
+          refreshTimeoutRef.current = setTimeout(() => {
+            refreshToken();
+          }, refreshAt - now);
+        }
+      } catch (error) {
+        console.error('Failed to schedule token refresh:', error);
+      }
+    },
+    [refreshToken]
+  );
+
+  const refreshToken = useCallback(async () => {
     try {
       const response = await getApi().post('/api/auth/refresh');
       const { accessToken } = response.data;
@@ -46,25 +52,21 @@ export const AuthProvider = ({ children }) => {
       console.error('Token refresh failed:', error);
       logout();
     }
-  };
+  }, [scheduleTokenRefresh, logout]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiresAt = payload.exp * 1000;
 
-        if (payload.exp * 1000 < Date.now()) {
+        if (expiresAt > Date.now()) {
+          setUser({ id: payload.userId, email: payload.email, role: payload.role });
+          scheduleTokenRefresh(token);
+        } else {
           localStorage.removeItem('accessToken');
           setUser(null);
-        } else {
-          setUser({
-            id: payload.id,
-            email: payload.email,
-            role: payload.role,
-            units: payload.units,
-          });
-          scheduleTokenRefresh(token);
         }
       } catch (error) {
         console.error('Invalid token:', error);
@@ -79,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         clearTimeout(refreshTimeoutRef.current);
       }
     };
-  }, []);
+  }, [scheduleTokenRefresh]);
 
   const login = async (email, password) => {
     try {
@@ -89,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('accessToken', accessToken);
       setUser(user);
       scheduleTokenRefresh(accessToken);
+
       return { success: true };
     } catch (error) {
       return {
@@ -98,17 +101,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
     localStorage.removeItem('accessToken');
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, refreshToken }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

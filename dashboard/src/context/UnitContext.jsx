@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { getApi } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -26,9 +27,9 @@ export const UnitProvider = ({ children }) => {
       setSelectedUnit(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchUnits]);
 
-  const fetchUnits = async () => {
+  const fetchUnits = useCallback(async () => {
     try {
       const response = await getApi().get('/api/units');
       setUnits(response.data);
@@ -42,7 +43,7 @@ export const UnitProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedUnit]);
 
   const selectUnit = unit => {
     setSelectedUnit(unit);
@@ -60,4 +61,8 @@ export const UnitProvider = ({ children }) => {
       {children}
     </UnitContext.Provider>
   );
+};
+
+UnitProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
