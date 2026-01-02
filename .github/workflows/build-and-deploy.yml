@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install root dependencies
-        run: npm ci
+        run: npm install
 
       - name: Check Prettier formatting
         run: npm run format:check
@@ -99,8 +99,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-${{ matrix.service }}:${{ steps.timestamp.outputs.tag }}
             ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-${{ matrix.service }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   deploy:
     needs: build
