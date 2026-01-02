@@ -20,16 +20,46 @@ spec:
             - containerPort: 3000
           env:
             - name: NODE_ENV
-              value: "production"
+              value: 'production'
             - name: MONGODB_URL
-              value: "mongodb://admin:$(MONGODB_PASSWORD)@mongodb-service:27017/ldschurch-stream"
+              value: 'mongodb://admin:$(MONGODB_PASSWORD)@mongodb-service:27017/ldschurch-stream'
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: ldschurch-stream-secrets
                   key: mongodb_password
             - name: CORS_ORIGINS
-              value: "https://dashboard.ldschurch.stream,https://api.ldschurch.stream"
+              value: 'https://dashboard.ldschurch.stream,https://api.ldschurch.stream'
+            - name: YOUTUBE_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ldschurch-stream-secrets
+                  key: youtube_channel_id
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ldschurch-stream-secrets
+                  key: smtp_host
+            - name: SMTP_PORT
+              value: '465'
+            - name: SMTP_SECURE
+              value: 'true'
+            - name: SMTP_USER_FILE
+              value: '/run/secrets/smtp_user'
+            - name: SMTP_PASS_FILE
+              value: '/run/secrets/smtp_pass'
+            - name: JWT_SECRET_FILE
+              value: '/run/secrets/jwt_secret'
+            - name: JWT_REFRESH_SECRET_FILE
+              value: '/run/secrets/jwt_refresh_secret'
+            - name: YOUTUBE_ACCESS_TOKEN_FILE
+              value: '/run/secrets/youtube_access_token'
+            - name: YOUTUBE_REFRESH_TOKEN_FILE
+              value: '/run/secrets/youtube_refresh_token'
+            - name: YOUTUBE_CLIENT_ID_FILE
+              value: '/run/secrets/youtube_client_id'
+            - name: YOUTUBE_CLIENT_SECRET_FILE
+              value: '/run/secrets/youtube_client_secret'
           volumeMounts:
             - name: secrets
               mountPath: /run/secrets
