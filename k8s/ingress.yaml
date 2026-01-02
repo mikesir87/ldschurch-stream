@@ -7,6 +7,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: 'cloudflare-ldschurch'
     traefik.ingress.kubernetes.io/router.priority: '100'
+    traefik.ingress.kubernetes.io/redirect-to-https: 'true'
 spec:
   tls:
     - hosts:
@@ -34,6 +35,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: 'cloudflare-ldschurch'
     traefik.ingress.kubernetes.io/router.priority: '90'
+    traefik.ingress.kubernetes.io/redirect-to-https: 'true'
 spec:
   tls:
     - hosts:
@@ -61,6 +63,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: 'cloudflare-ldschurch'
     traefik.ingress.kubernetes.io/router.priority: '80'
+    traefik.ingress.kubernetes.io/redirect-to-https: 'true'
 spec:
   tls:
     - hosts:
@@ -89,6 +92,7 @@ metadata:
   annotations:
     cert-manager.io/issuer: 'cloudflare-ldschurch'
     traefik.ingress.kubernetes.io/router.priority: '10'
+    traefik.ingress.kubernetes.io/redirect-to-https: 'true'
 spec:
   tls:
     - hosts:
