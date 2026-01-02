@@ -90,7 +90,7 @@ jobs:
         run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
 
       - name: Build and push all services
-        uses: docker/bake-action@v4
+        uses: docker/bake-action@v6
         with:
           push: true
         env:
@@ -134,3 +134,4 @@ jobs:
             k8s/access-deployment.yaml
             k8s/landing-deployment.yaml
             k8s/ingress.yaml
+          timeout: 30s
