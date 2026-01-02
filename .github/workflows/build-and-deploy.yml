@@ -92,6 +92,7 @@ jobs:
       - name: Build and push all services
         uses: docker/bake-action@v6
         with:
+          files: docker-bake.hcl
           push: true
         env:
           TAG: ${{ steps.timestamp.outputs.tag }}
