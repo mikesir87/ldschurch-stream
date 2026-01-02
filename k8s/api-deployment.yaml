@@ -4,7 +4,7 @@ metadata:
   name: api-deployment
   namespace: ldschurch-stream
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: api
@@ -22,12 +22,10 @@ spec:
             - name: NODE_ENV
               value: 'production'
             - name: MONGODB_URL
-              value: 'mongodb://admin:$(MONGODB_PASSWORD)@mongodb-service:27017/ldschurch-stream'
-            - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: ldschurch-stream-secrets
-                  key: mongodb_password
+                  key: mongodb_url
             - name: CORS_ORIGINS
               value: 'https://dashboard.ldschurch.stream,https://api.ldschurch.stream'
             - name: YOUTUBE_CHANNEL_ID
@@ -45,24 +43,24 @@ spec:
             - name: SMTP_SECURE
               value: 'true'
             - name: SMTP_USER_FILE
-              value: '/run/secrets/smtp_user'
+              value: '/run/secrets/app/smtp_user'
             - name: SMTP_PASS_FILE
-              value: '/run/secrets/smtp_pass'
+              value: '/run/secrets/app/smtp_pass'
             - name: JWT_SECRET_FILE
-              value: '/run/secrets/jwt_secret'
+              value: '/run/secrets/app/jwt_secret'
             - name: JWT_REFRESH_SECRET_FILE
-              value: '/run/secrets/jwt_refresh_secret'
+              value: '/run/secrets/app/jwt_refresh_secret'
             - name: YOUTUBE_ACCESS_TOKEN_FILE
-              value: '/run/secrets/youtube_access_token'
+              value: '/run/secrets/app/youtube_access_token'
             - name: YOUTUBE_REFRESH_TOKEN_FILE
-              value: '/run/secrets/youtube_refresh_token'
+              value: '/run/secrets/app/youtube_refresh_token'
             - name: YOUTUBE_CLIENT_ID_FILE
-              value: '/run/secrets/youtube_client_id'
+              value: '/run/secrets/app/youtube_client_id'
             - name: YOUTUBE_CLIENT_SECRET_FILE
-              value: '/run/secrets/youtube_client_secret'
+              value: '/run/secrets/app/youtube_client_secret'
           volumeMounts:
             - name: secrets
-              mountPath: /run/secrets
+              mountPath: /run/secrets/app
               readOnly: true
           livenessProbe:
             httpGet:

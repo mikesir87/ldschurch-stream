@@ -59,7 +59,7 @@ app.post('/youtube/v3/liveStreams', (req, res) => {
       title: requestBody.snippet?.title || 'Mock Stream',
     },
     cdn: {
-      format: requestBody.cdn?.format || '1080p',
+      resolution: requestBody.cdn?.resolution || '1080p',
       ingestionType: requestBody.cdn?.ingestionType || 'rtmp',
       ingestionInfo: {
         streamName: `mock-key-${Date.now()}`,

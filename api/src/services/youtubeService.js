@@ -114,7 +114,7 @@ class YouTubeService {
             title: `${title} - Stream`,
           },
           cdn: {
-            format: '1080p',
+            resolution: '1080p',
             ingestionType: 'rtmp',
           },
         },

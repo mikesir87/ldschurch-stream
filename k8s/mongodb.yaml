@@ -20,7 +20,7 @@ spec:
             - containerPort: 27017
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-              value: "admin"
+              value: 'admin'
             - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -59,3 +59,41 @@ spec:
   resources:
     requests:
       storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-express-deployment
+  namespace: ldschurch-stream
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+        - name: mongo-express
+          image: mongo-express:1
+          ports:
+            - containerPort: 8081
+          env:
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              value: 'admin'
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ldschurch-stream-secrets
+                  key: mongodb_password
+            - name: ME_CONFIG_MONGODB_SERVER
+              value: 'mongodb-service'
+            - name: ME_CONFIG_MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ldschurch-stream-secrets
+                  key: mongodb_url
+            - name: ME_CONFIG_BASICAUTH
+              value: 'false'
