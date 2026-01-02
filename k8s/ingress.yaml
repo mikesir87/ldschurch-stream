@@ -4,15 +4,12 @@ metadata:
   name: ldschurch-stream-ingress
   namespace: ldschurch-stream
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/issuer: 'cloudflare-ldschurch'
 spec:
   tls:
     - hosts:
         - ldschurch.stream
-        - api.ldschurch.stream
-        - dashboard.ldschurch.stream
-        - "*.ldschurch.stream"
+        - '*.ldschurch.stream'
       secretName: ldschurch-stream-tls
   rules:
     - host: ldschurch.stream
@@ -45,7 +42,7 @@ spec:
                 name: dashboard-service
                 port:
                   number: 80
-    - host: "*.ldschurch.stream"
+    - host: '*.ldschurch.stream'
       http:
         paths:
           - path: /

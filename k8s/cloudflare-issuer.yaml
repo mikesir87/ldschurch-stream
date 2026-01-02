@@ -1,0 +1,33 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: cloudflare-api-token-secret
+  namespace: ldschurch-stream
+spec:
+  encryptedData:
+    api-token: AgB730G9T8VBFTdKfo35mRq5OnV34GIWc5B3bAoImj+wHJ49culMp8o6983dOXouM7KbrDMqYTM/R/NDCx5YgQzyoSHw+TiZ17UrzCRoplVME1cj4NwgtyDIZrs+MwChls1qwAK96rYWdlcu1bev3tnSg6t7ZfQlR4zFEZ+JyZOg6Wq/+JU4iOibxDzsdZWmOYCFceaZIMO9c/5b75ScNbSxInPTjcVUdm9hX5FseOl0VRX0n9cxUN2KowqFYWtRz8Ovh3eXdBpr0POcI0moS6TXa7loU3QNs6ZhNzRfEh3PI1H0FjnkPcykz/Cg+Alag2Hfz/c7IGIVFkZfYeVZ0rM51RU21hfjZMn4xyK/H7cwFiiKUeR5SX4NeaKaxgMvJmMgTajdC/yqqfidDg5ViLP6hNV4+RyTl1+IVmzUjNUadQ0Aomx69N7Ly8dgoEdPzffWzmZlB/6uj5yMLQ0Ih7W3/6FgSt2VelLKJzepNfLSjNYLhaN5N8sbLColIVcaOQyYhLc7jNN04khubWEWjFFZy20C/2e/tdQhSWzX/I/k3otOii7Yp+10vXDsCoV+VCC9ac9CZBIfUPnE0HGF3CmGvgaFav7IcFdvMtB1W6YWZdJqVilqQbVoaRuA/gFBzw+MQwX/KPPwtTPop28tPcqbV46KUxn2qiJvUZQ4AJR/5esiYVcb8l/wPOjMaosHqJBvempNAdCEapkAz5ffTMO0ZprQeBvFk9QFjw9aU0oTzgP7aqEHjbkO
+  template:
+    metadata:
+      creationTimestamp: null
+      name: cloudflare-api-token-secret
+      namespace: ldschurch-stream
+    type: Opaque
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: cloudflare-ldschurch
+  namespace: ldschurch-stream
+spec:
+  acme:
+    privateKeySecretRef:
+      name: cloudflare-cert-issuer-key
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret
+              key: api-token
