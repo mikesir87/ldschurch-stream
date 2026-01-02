@@ -60,6 +60,7 @@ app.post('/youtube/v3/liveStreams', (req, res) => {
     },
     cdn: {
       resolution: requestBody.cdn?.resolution || '1080p',
+      frameRate: requestBody.cdn?.frameRate || '30fps',
       ingestionType: requestBody.cdn?.ingestionType || 'rtmp',
       ingestionInfo: {
         streamName: `mock-key-${Date.now()}`,

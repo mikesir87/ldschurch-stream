@@ -115,6 +115,7 @@ class YouTubeService {
           },
           cdn: {
             resolution: '1080p',
+            frameRate: '30fps',
             ingestionType: 'rtmp',
           },
         },
