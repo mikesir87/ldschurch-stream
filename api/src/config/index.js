@@ -42,11 +42,8 @@ module.exports = {
   },
 
   email: {
-    host: process.env.SMTP_HOST || 'localhost',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    user: readSecret(process.env.SMTP_USER_FILE) || process.env.SMTP_USER,
-    pass: readSecret(process.env.SMTP_PASS_FILE) || process.env.SMTP_PASS,
+    apiKey: readSecret(process.env.SENDGRID_API_KEY_FILE) || process.env.SENDGRID_API_KEY,
+    mockHost: process.env.SENDGRID_MOCK_HOST,
     from: process.env.FROM_EMAIL || 'noreply@ldschurch.stream',
   },
 

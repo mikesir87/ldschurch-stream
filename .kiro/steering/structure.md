@@ -9,6 +9,7 @@ ldschurch-stream/
 ├── access/                       # Stream attendee access app (React)
 ├── landing/                      # Marketing/landing page (React)
 ├── youtube-mock/                 # YouTube API mock server for development
+├── sendgrid-mock/                # SendGrid API mock server for development
 ├── k8s/                         # Kubernetes deployment manifests
 ├── monitoring/                   # Observability configuration
 ├── secrets/                      # Local development secrets
@@ -205,6 +206,40 @@ GET /health                        # Server status and metrics
 - Generates unique mock IDs and stream keys for testing
 - Available at http://youtube-mock.traefik.me for debugging
 - Supports complete YouTube Live streaming workflow simulation
+
+### SendGrid Mock Server Structure
+
+The `sendgrid-mock/` service provides a development-only mock of the SendGrid API:
+
+```
+sendgrid-mock/
+├── server.js                  # Express server with SendGrid API endpoints
+├── package.json              # Dependencies (express, cors)
+├── Dockerfile                 # Container build for development
+```
+
+#### Mock Server Endpoints
+
+```javascript
+// SendGrid Mail API
+POST /v3/mail/send             # Send email (stores in memory)
+
+// Web interface
+GET /                          # View sent emails in browser
+GET /api/emails               # Get emails as JSON
+DELETE /api/emails            # Clear all emails
+
+// Health check
+GET /health                   # Server status and metrics
+```
+
+#### Development Integration
+
+- Automatically used when `SENDGRID_API_KEY=mock-api-key`
+- Provides realistic API responses without using SendGrid quota
+- Stores emails in memory for easy testing and debugging
+- Available at http://mail.traefik.me for viewing sent emails
+- Supports complete email workflow simulation
 
 ```
 dashboard/ (or access/)
@@ -3116,8 +3151,8 @@ services:
     image: mailhog/mailhog
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
-      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+      - 'traefik.http.routers.sendgrid-mock.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.sendgrid-mock.loadbalancer.server.port=3002'
 
   api:
     build:

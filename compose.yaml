@@ -46,12 +46,21 @@ services:
       mongodb:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog
+  sendgrid-mock:
+    build: ./sendgrid-mock
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
-      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+      - 'traefik.http.routers.sendgrid-mock.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.sendgrid-mock.loadbalancer.server.port=3002'
+    develop:
+      watch:
+        - action: sync
+          path: ./sendgrid-mock
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./sendgrid-mock/package.json
 
   youtube-mock:
     build: ./youtube-mock
@@ -76,8 +85,8 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream?authSource=admin
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
+      - SENDGRID_API_KEY=mock-api-key
+      - SENDGRID_MOCK_HOST=http://sendgrid-mock:3002
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
       - YOUTUBE_CLIENT_ID=placeholder-client-id
       - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
@@ -99,7 +108,7 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-      mailhog:
+      sendgrid-mock:
         condition: service_started
       youtube-mock:
         condition: service_started

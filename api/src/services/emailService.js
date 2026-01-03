@@ -1,33 +1,30 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const config = require('../config');
 const logger = require('../utils/logger');
 const { recordEmailSent } = require('../utils/metrics');
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: config.email.host,
-      port: config.email.port,
-      secure: config.email.secure,
-      auth: config.email.user
-        ? {
-            user: config.email.user,
-            pass: config.email.pass,
-          }
-        : undefined,
-    });
+    if (config.email.apiKey) {
+      sgMail.setApiKey(config.email.apiKey);
+    }
+
+    // Set custom API host for development mock
+    if (config.email.mockHost) {
+      sgMail.client.setDefaultRequest('baseUrl', config.email.mockHost);
+    }
   }
 
   async sendInviteEmail(email, inviteData) {
     try {
-      const mailOptions = {
-        from: config.email.from,
+      const msg = {
         to: email,
+        from: config.email.from,
         subject: `Invitation to Join ${inviteData.unitName} - LDSChurch.Stream`,
         html: this.generateInviteHtml(inviteData),
       };
 
-      await this.transporter.sendMail(mailOptions);
+      await sgMail.send(msg);
 
       logger.info('Invite email sent', {
         email,
@@ -50,14 +47,14 @@ class EmailService {
 
   async sendAttendanceReport(recipients, report) {
     try {
-      const mailOptions = {
+      const msg = {
+        to: recipients,
         from: config.email.from,
-        to: recipients.join(', '),
         subject: `Weekly Attendance Report - ${report.unit}`,
         html: this.generateReportHtml(report),
       };
 
-      await this.transporter.sendMail(mailOptions);
+      await sgMail.send(msg);
 
       logger.info('Attendance report sent', {
         unit: report.unit,
@@ -78,14 +75,14 @@ class EmailService {
 
   async sendTestEmail(email) {
     try {
-      const mailOptions = {
-        from: config.email.from,
+      const msg = {
         to: email,
-        subject: 'SMTP Configuration Test - LDSChurch.Stream',
+        from: config.email.from,
+        subject: 'SendGrid Configuration Test - LDSChurch.Stream',
         html: this.generateTestEmailHtml(),
       };
 
-      await this.transporter.sendMail(mailOptions);
+      await sgMail.send(msg);
 
       logger.info('Test email sent successfully', { email });
       recordEmailSent('test', true);
@@ -133,18 +130,18 @@ class EmailService {
 
   generateTestEmailHtml() {
     return `
-      <h2>SMTP Configuration Test</h2>
+      <h2>SendGrid Configuration Test</h2>
       <p>Hello!</p>
-      <p>This is a test email to verify that your SMTP configuration is working correctly.</p>
+      <p>This is a test email to verify that your SendGrid configuration is working correctly.</p>
       
       <p><strong>Test Details:</strong></p>
       <ul>
         <li>Sent at: ${new Date().toLocaleString()}</li>
         <li>From: LDSChurch.Stream System</li>
-        <li>Purpose: SMTP Configuration Validation</li>
+        <li>Purpose: SendGrid Configuration Validation</li>
       </ul>
       
-      <p>If you received this email, your SMTP settings are configured correctly! ✅</p>
+      <p>If you received this email, your SendGrid settings are configured correctly! ✅</p>
       
       <hr>
       <p style="font-size: 12px; color: #666;">

@@ -33,19 +33,8 @@ spec:
                 secretKeyRef:
                   name: ldschurch-stream-secrets
                   key: youtube_channel_id
-            - name: SMTP_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: ldschurch-stream-secrets
-                  key: smtp_host
-            - name: SMTP_PORT
-              value: '587'
-            - name: SMTP_SECURE
-              value: 'true'
-            - name: SMTP_USER_FILE
-              value: '/run/secrets/app/smtp_user'
-            - name: SMTP_PASS_FILE
-              value: '/run/secrets/app/smtp_pass'
+            - name: SENDGRID_API_KEY_FILE
+              value: '/run/secrets/app/sendgrid_api_key'
             - name: JWT_SECRET_FILE
               value: '/run/secrets/app/jwt_secret'
             - name: JWT_REFRESH_SECRET_FILE

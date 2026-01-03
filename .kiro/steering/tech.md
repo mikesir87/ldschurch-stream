@@ -10,7 +10,7 @@ Technical Architecture (tech.md) - Defines the technical implementation approach
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT tokens with refresh token rotation
-- **Email**: Nodemailer with SMTP provider
+- **Email**: SendGrid API with @sendgrid/mail package
 - **YouTube Integration**: Google APIs Node.js client
 - **Scheduling**: node-cron for automated tasks
 
@@ -257,8 +257,7 @@ data:
   youtube_api_key: <base64-encoded-key>
   youtube_client_id: <base64-encoded-id>
   youtube_client_secret: <base64-encoded-secret>
-  smtp_user: <base64-encoded-user>
-  smtp_pass: <base64-encoded-pass>
+  sendgrid_api_key: <base64-encoded-sendgrid-api-key>
 ```
 
 ### Production Configuration
@@ -270,8 +269,8 @@ MONGODB_URL=mongodb://mongodb-service:27017/ldschurch-stream
 JWT_SECRET_FILE=/run/secrets/jwt_secret
 YOUTUBE_API_KEY_FILE=/run/secrets/youtube_api_key
 CORS_ORIGINS=https://dashboard.ldschurch.stream,https://api.ldschurch.stream
-SMTP_SECURE=true
-BCRYPT_ROUNDS=12
+SENDGRID_API_KEY_FILE=/run/secrets/sendgrid_api_key
+CORS_ORIGINS=https://dashboard.ldschurch.stream,https://api.ldschurch.stream
 ```
 
 ### Frontend Configuration Deployment
@@ -576,9 +575,9 @@ app.post('/youtube/v3/liveBroadcasts/bind', (req, res) => {
 
 ## Email System
 
-### SMTP Configuration
+### SendGrid Configuration
 
-- Configurable SMTP provider (SendGrid, AWS SES, etc.)
+- Configurable SendGrid API integration
 - Template-based emails using handlebars or similar
 - Queue system for bulk email sending
 
@@ -1244,11 +1243,8 @@ module.exports = {
   },
 
   email: {
-    host: process.env.SMTP_HOST || 'localhost',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    user: readSecret(process.env.SMTP_USER_FILE) || process.env.SMTP_USER,
-    pass: readSecret(process.env.SMTP_PASS_FILE) || process.env.SMTP_PASS,
+    apiKey: readSecret(process.env.SENDGRID_API_KEY_FILE) || process.env.SENDGRID_API_KEY,
+    mockHost: process.env.SENDGRID_MOCK_HOST,
     from: process.env.FROM_EMAIL || 'noreply@ldschurch.stream',
   },
 
@@ -1310,7 +1306,7 @@ secrets/
   - MongoDB for data storage
   - Mongo Express for database visualization (http://db.traefik.me)
   - YouTube Mock Server for development API testing (http://youtube-mock.traefik.me)
-  - MailHog for email testing and visualization (http://mail.traefik.me)
+  - SendGrid Mock Server for email testing and visualization (http://mail.traefik.me)
 - Environment variables for all configuration
 - Separate .env files for different environments
 - Hot reload for both API and frontend development

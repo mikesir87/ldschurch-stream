@@ -313,10 +313,10 @@ const Admin = () => {
         <Col md={6}>
           <Card className="mb-4">
             <Card.Header>
-              <h5>SMTP Configuration Test</h5>
+              <h5>SendGrid Configuration Test</h5>
             </Card.Header>
             <Card.Body>
-              <p>Send a test email to verify SMTP settings are configured correctly.</p>
+              <p>Send a test email to verify SendGrid settings are configured correctly.</p>
               <Form onSubmit={handleSendTestEmail}>
                 <Form.Group className="mb-3">
                   <Form.Label>Test Email Address</Form.Label>
@@ -328,7 +328,7 @@ const Admin = () => {
                     required
                   />
                   <Form.Text className="text-muted">
-                    A test email will be sent to verify SMTP configuration.
+                    A test email will be sent to verify SendGrid configuration.
                   </Form.Text>
                 </Form.Group>
                 {messages.testEmail && (
