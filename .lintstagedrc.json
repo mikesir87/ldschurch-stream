@@ -1,8 +1,8 @@
 {
-  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
-  "*.{json,md,yml,yaml}": ["prettier --write"],
-  "api/**/*.js": ["cd api && npm run lint:fix"],
-  "dashboard/**/*.{js,jsx}": ["cd dashboard && npm run lint:fix"],
-  "access/**/*.{js,jsx}": ["cd access && npm run lint:fix"],
-  "landing/**/*.{js,jsx}": ["cd landing && npm run lint:fix"]
+  "*.{js,jsx,ts,tsx}": ["eslint", "prettier --check"],
+  "*.{json,md,yml,yaml}": ["prettier --check"],
+  "api/**/*.js": ["cd api && npm run lint"],
+  "dashboard/**/*.{js,jsx}": ["cd dashboard && npm run lint"],
+  "access/**/*.{js,jsx}": ["cd access && npm run lint"],
+  "landing/**/*.{js,jsx}": ["cd landing && npm run lint"]
 }
