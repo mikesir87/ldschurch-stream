@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const refreshTimeoutRef = useRef(null);
+  const refreshTokenRef = useRef(null);
 
   const logout = useCallback(() => {
     if (refreshTimeoutRef.current) {
@@ -23,6 +24,27 @@ export const AuthProvider = ({ children }) => {
     }
     localStorage.removeItem('accessToken');
     setUser(null);
+  }, []);
+
+  const scheduleTokenRefresh = useCallback(token => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiresAt = payload.exp * 1000;
+      const now = Date.now();
+      const refreshAt = expiresAt - 60000; // Refresh 1 minute before expiry
+
+      if (refreshAt > now) {
+        refreshTimeoutRef.current = setTimeout(() => {
+          refreshTokenRef.current?.();
+        }, refreshAt - now);
+      }
+    } catch (error) {
+      console.error('Failed to schedule token refresh:', error);
+    }
   }, []);
 
   const refreshToken = useCallback(async () => {
@@ -38,29 +60,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [logout, scheduleTokenRefresh]);
 
-  const scheduleTokenRefresh = useCallback(
-    token => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
-
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expiresAt = payload.exp * 1000;
-        const now = Date.now();
-        const refreshAt = expiresAt - 60000; // Refresh 1 minute before expiry
-
-        if (refreshAt > now) {
-          refreshTimeoutRef.current = setTimeout(() => {
-            refreshToken();
-          }, refreshAt - now);
-        }
-      } catch (error) {
-        console.error('Failed to schedule token refresh:', error);
-      }
-    },
-    [refreshToken]
-  );
+  refreshTokenRef.current = refreshToken;
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
