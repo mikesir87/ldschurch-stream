@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Token refresh failed:', error);
       logout();
     }
-  }, [logout]);
+  }, [logout, scheduleTokenRefresh]);
 
   const scheduleTokenRefresh = useCallback(
     token => {
