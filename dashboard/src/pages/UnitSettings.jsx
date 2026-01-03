@@ -15,12 +15,6 @@ const UnitSettings = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
-  useEffect(() => {
-    if (selectedUnit) {
-      loadSettings();
-    }
-  }, [selectedUnit, loadSettings]);
-
   const loadSettings = useCallback(async () => {
     try {
       const api = getApi();
@@ -32,6 +26,12 @@ const UnitSettings = () => {
       setLoading(false);
     }
   }, [selectedUnit]);
+
+  useEffect(() => {
+    if (selectedUnit) {
+      loadSettings();
+    }
+  }, [selectedUnit, loadSettings]);
 
   const addEmail = () => {
     if (newEmail && !leadershipEmails.includes(newEmail)) {

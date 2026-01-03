@@ -17,6 +17,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const refreshTimeoutRef = useRef(null);
 
+  const logout = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+    localStorage.removeItem('accessToken');
+    setUser(null);
+  }, []);
+
+  const refreshToken = useCallback(async () => {
+    try {
+      const response = await getApi().post('/api/auth/refresh');
+      const { accessToken } = response.data;
+
+      localStorage.setItem('accessToken', accessToken);
+      scheduleTokenRefresh(accessToken);
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      logout();
+    }
+  }, [logout]);
+
   const scheduleTokenRefresh = useCallback(
     token => {
       if (refreshTimeoutRef.current) {
@@ -40,19 +61,6 @@ export const AuthProvider = ({ children }) => {
     },
     [refreshToken]
   );
-
-  const refreshToken = useCallback(async () => {
-    try {
-      const response = await getApi().post('/api/auth/refresh');
-      const { accessToken } = response.data;
-
-      localStorage.setItem('accessToken', accessToken);
-      scheduleTokenRefresh(accessToken);
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      logout();
-    }
-  }, [scheduleTokenRefresh, logout]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -100,14 +108,6 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
-
-  const logout = useCallback(() => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-    localStorage.removeItem('accessToken');
-    setUser(null);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, refreshToken }}>

@@ -19,16 +19,6 @@ export const UnitProvider = ({ children }) => {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchUnits();
-    } else {
-      setUnits([]);
-      setSelectedUnit(null);
-      setLoading(false);
-    }
-  }, [user, fetchUnits]);
-
   const fetchUnits = useCallback(async () => {
     try {
       const response = await getApi().get('/api/units');
@@ -44,6 +34,16 @@ export const UnitProvider = ({ children }) => {
       setLoading(false);
     }
   }, [selectedUnit]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnits();
+    } else {
+      setUnits([]);
+      setSelectedUnit(null);
+      setLoading(false);
+    }
+  }, [user, fetchUnits]);
 
   const selectUnit = unit => {
     setSelectedUnit(unit);
