@@ -76,6 +76,30 @@ class EmailService {
     }
   }
 
+  async sendTestEmail(email) {
+    try {
+      const mailOptions = {
+        from: config.email.from,
+        to: email,
+        subject: 'SMTP Configuration Test - LDSChurch.Stream',
+        html: this.generateTestEmailHtml(),
+      };
+
+      await this.transporter.sendMail(mailOptions);
+
+      logger.info('Test email sent successfully', { email });
+      recordEmailSent('test', true);
+    } catch (error) {
+      logger.error('Failed to send test email', {
+        error: error.message,
+        email,
+      });
+
+      recordEmailSent('test', false);
+      throw error;
+    }
+  }
+
   generateInviteHtml(inviteData) {
     return `
       <h2>You're Invited to Join LDSChurch.Stream</h2>
@@ -103,6 +127,28 @@ class EmailService {
       <hr>
       <p style="font-size: 12px; color: #666;">
         This is an automated message from LDSChurch.Stream. This application is not an official product of The Church of Jesus Christ of Latter-Day Saints.
+      </p>
+    `;
+  }
+
+  generateTestEmailHtml() {
+    return `
+      <h2>SMTP Configuration Test</h2>
+      <p>Hello!</p>
+      <p>This is a test email to verify that your SMTP configuration is working correctly.</p>
+      
+      <p><strong>Test Details:</strong></p>
+      <ul>
+        <li>Sent at: ${new Date().toLocaleString()}</li>
+        <li>From: LDSChurch.Stream System</li>
+        <li>Purpose: SMTP Configuration Validation</li>
+      </ul>
+      
+      <p>If you received this email, your SMTP settings are configured correctly! ✅</p>
+      
+      <hr>
+      <p style="font-size: 12px; color: #666;">
+        This is an automated test message from LDSChurch.Stream. This application is not an official product of The Church of Jesus Christ of Latter-Day Saints.
       </p>
     `;
   }

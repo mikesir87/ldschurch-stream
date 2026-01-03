@@ -117,6 +117,43 @@ const setupTestReportData = async (req, res, next) => {
   }
 };
 
+const sendTestEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Email address is required',
+        },
+      });
+    }
+
+    req.logger.info('Sending test email', {
+      userId: req.user.id,
+      testEmail: email,
+    });
+
+    await emailService.sendTestEmail(email);
+
+    req.logger.info('Test email sent successfully', {
+      testEmail: email,
+    });
+
+    res.json({
+      message: 'Test email sent successfully',
+      email,
+    });
+  } catch (error) {
+    req.logger.error('Failed to send test email', {
+      error: error.message,
+      testEmail: req.body.email,
+    });
+    next(error);
+  }
+};
+
 module.exports = {
   getUnits,
   createUnit,
@@ -125,4 +162,5 @@ module.exports = {
   triggerYoutubeBatch,
   triggerReportGeneration,
   setupTestReportData,
+  sendTestEmail,
 };

@@ -13,5 +13,6 @@ router.get('/users', adminController.getUsers);
 router.post('/youtube/batch', adminController.triggerYoutubeBatch);
 router.post('/reports/generate', adminController.triggerReportGeneration);
 router.post('/test/setup-report-data', adminController.setupTestReportData);
+router.post('/test/email', adminController.sendTestEmail);
 
 module.exports = router;

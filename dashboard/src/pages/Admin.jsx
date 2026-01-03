@@ -17,6 +17,7 @@ const Admin = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [testEmail, setTestEmail] = useState('');
 
   useEffect(() => {
     loadUnits();
@@ -108,6 +109,31 @@ const Admin = () => {
       }));
     } finally {
       setLoading(prev => ({ ...prev, [jobType]: false }));
+    }
+  };
+
+  const handleSendTestEmail = async e => {
+    e.preventDefault();
+    setLoading(prev => ({ ...prev, testEmail: true }));
+    setMessages(prev => ({ ...prev, testEmail: null }));
+
+    try {
+      await getApi().post('/api/admin/test/email', { email: testEmail });
+      setMessages(prev => ({
+        ...prev,
+        testEmail: { type: 'success', text: `Test email sent to ${testEmail}` },
+      }));
+      setTestEmail('');
+    } catch (error) {
+      setMessages(prev => ({
+        ...prev,
+        testEmail: {
+          type: 'danger',
+          text: error.response?.data?.error?.message || 'Failed to send test email',
+        },
+      }));
+    } finally {
+      setLoading(prev => ({ ...prev, testEmail: false }));
     }
   };
 
@@ -278,6 +304,44 @@ const Admin = () => {
                   {messages.testData.text}
                 </Alert>
               )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Header>
+              <h5>SMTP Configuration Test</h5>
+            </Card.Header>
+            <Card.Body>
+              <p>Send a test email to verify SMTP settings are configured correctly.</p>
+              <Form onSubmit={handleSendTestEmail}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Test Email Address</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="admin@example.com"
+                    value={testEmail}
+                    onChange={e => setTestEmail(e.target.value)}
+                    required
+                  />
+                  <Form.Text className="text-muted">
+                    A test email will be sent to verify SMTP configuration.
+                  </Form.Text>
+                </Form.Group>
+                {messages.testEmail && (
+                  <Alert variant={messages.testEmail.type}>{messages.testEmail.text}</Alert>
+                )}
+                <Button
+                  type="submit"
+                  variant="info"
+                  disabled={loading.testEmail || !testEmail.trim()}
+                >
+                  {loading.testEmail ? 'Sending...' : 'Send Test Email'}
+                </Button>
+              </Form>
             </Card.Body>
           </Card>
         </Col>
