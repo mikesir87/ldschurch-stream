@@ -48,91 +48,46 @@ mikesir87/ldschurch-stream-landing:20250101-120000
 
 ### GitHub Actions CI/CD
 
-```yaml
-# .github/workflows/build-and-deploy.yml
-name: Build and Deploy
+The CI/CD pipeline is split into separate workflows for cost optimization:
 
+#### Component-Specific Workflows
+
+Each component has its own workflow that only triggers when its code changes:
+
+- **`.github/workflows/api.yml`** - Builds/deploys when `api/**` changes
+- **`.github/workflows/dashboard.yml`** - Builds/deploys when `dashboard/**` changes
+- **`.github/workflows/access.yml`** - Builds/deploys when `access/**` changes
+- **`.github/workflows/landing.yml`** - Builds/deploys when `landing/**` changes
+
+#### Shared Workflows
+
+- **`.github/workflows/lint-and-format.yml`** - Runs on all pushes/PRs for code quality
+- **`.github/workflows/infrastructure.yml`** - Deploys when `k8s/**` changes
+
+#### Benefits
+
+- **Cost Optimization**: Only builds changed components, saving Docker Build Cloud minutes
+- **Parallel Execution**: Multiple components can build simultaneously when changed
+- **Targeted Deployments**: Each service deploys independently
+- **Path-based Triggers**: Uses GitHub's `paths` filter to detect relevant changes
+
+```yaml
+# Example: api.yml workflow structure
+name: API Build and Deploy
 on:
   push:
     branches: [main]
+    paths: ['api/**', 'k8s/api-deployment.yaml']
   pull_request:
     branches: [main]
-
-env:
-  REGISTRY: docker.io
-  REGISTRY_USER: mikesir87
+    paths: ['api/**']
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [api, dashboard, access, landing]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: cloud
-          endpoint: ${{ secrets.BUILDX_ENDPOINT }}
-          token: ${{ secrets.BUILDX_TOKEN }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ env.REGISTRY_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Generate timestamp tag
-        id: timestamp
-        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: ./${{ matrix.service }}
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/ldschurch-stream-${{ matrix.service }}:${{ steps.timestamp.outputs.tag }}
-            ${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/ldschurch-stream-${{ matrix.service }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
+    # Docker Build Cloud integration
+    # Multi-architecture builds (linux/amd64, linux/arm64)
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Generate timestamp tag
-        id: timestamp
-        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
-
-      - name: Update Kubernetes manifests
-        run: |
-          sed -i "s|mikesir87/ldschurch-stream-.*:.*|mikesir87/ldschurch-stream-api:${{ steps.timestamp.outputs.tag }}|g" k8s/api-deployment.yaml
-          sed -i "s|mikesir87/ldschurch-stream-.*:.*|mikesir87/ldschurch-stream-dashboard:${{ steps.timestamp.outputs.tag }}|g" k8s/dashboard-deployment.yaml
-          sed -i "s|mikesir87/ldschurch-stream-.*:.*|mikesir87/ldschurch-stream-access:${{ steps.timestamp.outputs.tag }}|g" k8s/access-deployment.yaml
-
-      - name: Deploy to Kubernetes
-        uses: azure/k8s-deploy@v1
-        with:
-          manifests: |
-            k8s/namespace.yaml
-            k8s/mongodb.yaml
-            k8s/api-deployment.yaml
-            k8s/dashboard-deployment.yaml
-            k8s/access-deployment.yaml
-            k8s/ingress.yaml
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+    # Kubernetes deployment with kubectl
 ```
 
 ### Kubernetes Deployment Structure

@@ -2610,8 +2610,18 @@ https://api.ldschurch.stream/api/docs.json     # OpenAPI JSON spec
 
 ### CI Integration
 
+The project uses component-specific CI workflows for cost optimization:
+
 ```yaml
-# .github/workflows/build-and-deploy.yml (addition)
+# Component workflows trigger only on relevant changes:
+# - .github/workflows/api.yml (api/** changes)
+# - .github/workflows/dashboard.yml (dashboard/** changes)
+# - .github/workflows/access.yml (access/** changes)
+# - .github/workflows/landing.yml (landing/** changes)
+# - .github/workflows/infrastructure.yml (k8s/** changes)
+# - .github/workflows/lint-and-format.yml (all changes)
+
+# Example API documentation generation in api.yml:
 - name: Generate API documentation
   run: |
     cd api

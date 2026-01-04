@@ -1,0 +1,82 @@
+name: Access Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'access/**'
+      - 'k8s/access-deployment.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'access/**'
+
+env:
+  REGISTRY: docker.io
+  REGISTRY_USER: mikesir87
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    outputs:
+      image-tag: ${{ steps.timestamp.outputs.tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: cloud
+          endpoint: ${{ secrets.DOCKER_BUILDER_ENDPOINT }}
+
+      - name: Generate timestamp tag
+        id: timestamp
+        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Access
+        uses: docker/build-push-action@v5
+        with:
+          context: ./access
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-access:${{ steps.timestamp.outputs.tag }}
+            ${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-access:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Kubernetes manifests
+        run: |
+          sed -i "s|mikesir87/ldschurch-stream-access:.*|${{ secrets.DOCKER_USERNAME }}/ldschurch-stream-access:${{ needs.build.outputs.image-tag }}|g" k8s/access-deployment.yaml
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set kubectl context
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy Access to Kubernetes
+        uses: azure/k8s-deploy@v5
+        with:
+          manifests: |
+            k8s/namespace.yaml
+            k8s/access-deployment.yaml
+          timeout: 30s

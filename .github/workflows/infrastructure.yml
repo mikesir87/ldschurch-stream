@@ -1,0 +1,35 @@
+name: Infrastructure Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'k8s/**'
+      - '!k8s/*-deployment.yaml' # Exclude individual deployment files
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set kubectl context
+        uses: azure/k8s-set-context@v4
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy Infrastructure to Kubernetes
+        uses: azure/k8s-deploy@v5
+        with:
+          manifests: |
+            k8s/namespace.yaml
+            k8s/secrets.yaml
+            k8s/cloudflare-issuer.yaml
+            k8s/mongodb.yaml
+            k8s/ingress.yaml
+          timeout: 30s
