@@ -907,6 +907,7 @@ console.log(`Created migration: ${filename}`);
 api/src/jobs/
 ├── index.js                   # Job scheduler setup
 ├── reportGenerator.js        # Monday morning attendance reports and cleanup
+├── streamCompletion.js       # Mark streams as completed (every 30 minutes)
 └── youtubeBatchProcessor.js  # YouTube event creation (every 4 hours)
 ```
 
@@ -1170,6 +1171,7 @@ Global admins can manually trigger jobs through the admin interface:
 // routes/admin.js
 router.post('/youtube/batch', adminController.triggerYoutubeBatch);
 router.post('/reports/generate', adminController.triggerReportGeneration);
+router.post('/streams/complete', adminController.triggerStreamCompletion);
 router.post('/test/setup-report-data', adminController.setupTestReportData);
 ```
 

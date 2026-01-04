@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { AppError } = require('../middleware/errorHandler');
 const youtubeBatchProcessor = require('../jobs/youtubeBatchProcessor');
 const reportGenerator = require('../jobs/reportGenerator');
+const streamCompletion = require('../jobs/streamCompletion');
 const { setupTestData } = require('../scripts/setupTestReportData');
 const emailService = require('../services/emailService');
 
@@ -108,6 +109,15 @@ const triggerReportGeneration = async (req, res, next) => {
   }
 };
 
+const triggerStreamCompletion = async (req, res, next) => {
+  try {
+    await streamCompletion.markCompletedStreams();
+    res.json({ message: 'Stream completion check completed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const setupTestReportData = async (req, res, next) => {
   try {
     await setupTestData();
@@ -161,6 +171,7 @@ module.exports = {
   getUsers,
   triggerYoutubeBatch,
   triggerReportGeneration,
+  triggerStreamCompletion,
   setupTestReportData,
   sendTestEmail,
 };

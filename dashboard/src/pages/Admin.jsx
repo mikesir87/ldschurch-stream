@@ -313,6 +313,33 @@ const Admin = () => {
         <Col md={6}>
           <Card className="mb-4">
             <Card.Header>
+              <h5>Stream Completion</h5>
+            </Card.Header>
+            <Card.Body>
+              <p>
+                Mark streams as completed if they're 90+ minutes past their start time. Normally
+                runs every 30 minutes.
+              </p>
+              {messages.streamCompletion && (
+                <Alert variant={messages.streamCompletion.type}>
+                  {messages.streamCompletion.text}
+                </Alert>
+              )}
+              <Button
+                variant="warning"
+                onClick={() =>
+                  triggerJob('streamCompletion', '/api/admin/streams/complete', 'stream completion')
+                }
+                disabled={loading.streamCompletion}
+              >
+                {loading.streamCompletion ? 'Processing...' : 'Mark Completed Streams'}
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Header>
               <h5>SendGrid Configuration Test</h5>
             </Card.Header>
             <Card.Body>

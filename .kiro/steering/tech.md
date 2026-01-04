@@ -455,6 +455,7 @@ updatedAt: Date
 - `GET /api/admin/users` - List all users
 - `POST /api/admin/youtube/batch` - Manually trigger YouTube batch processing
 - `POST /api/admin/reports/generate` - Manually trigger report generation
+- `POST /api/admin/streams/complete` - Manually trigger stream completion check
 - `POST /api/admin/test/setup-report-data` - Setup test data for email testing
 
 ### Stream Management (Specialists)
@@ -606,6 +607,14 @@ app.post('/youtube/v3/liveBroadcasts/bind', (req, res) => {
 // Generate and send attendance reports
 // Delete YouTube events and recordings
 // Archive old attendance data (optional)
+```
+
+### Stream Completion (Every 30 Minutes)
+
+```javascript
+// Find streams that are 90+ minutes past their scheduled start time
+// Mark streams with status 'scheduled' or 'live' as 'completed'
+// Enables report generation for completed streams
 ```
 
 ### Weekly Maintenance

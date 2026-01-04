@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const config = require('../config');
 const youtubeBatchProcessor = require('./youtubeBatchProcessor');
 const reportGenerator = require('./reportGenerator');
+const streamCompletion = require('./streamCompletion');
 
 class JobScheduler {
   constructor() {
@@ -13,6 +14,11 @@ class JobScheduler {
     // YouTube batch processing - configurable schedule
     this.schedule('youtube-batch', config.cron.youtubeBatchSchedule, () =>
       youtubeBatchProcessor.processPendingStreams()
+    );
+
+    // Stream completion check - every 30 minutes
+    this.schedule('stream-completion', '*/30 * * * *', () =>
+      streamCompletion.markCompletedStreams()
     );
 
     // Weekly reports - Monday morning
