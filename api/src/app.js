@@ -53,6 +53,7 @@ const limiter = rateLimit({
       message: 'Too many requests, please try again later',
     },
   },
+  skip: req => req.url === '/health' || req.url === '/api/health',
 });
 app.use(limiter);
 
