@@ -2,6 +2,11 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
 
 const correlationMiddleware = (req, res, next) => {
+  // Skip logging for health endpoints
+  if (req.url === '/health' || req.url === '/api/health') {
+    return next();
+  }
+
   // Use existing correlation ID or generate new one
   req.correlationId = req.headers['x-correlation-id'] || uuidv4();
 
