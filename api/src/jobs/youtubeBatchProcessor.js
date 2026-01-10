@@ -33,6 +33,18 @@ class YouTubeBatchProcessor {
 
       jobLogger.info(`Processing ${pendingStreams.length} pending streams`);
 
+      // Pre-validate YouTube authentication to trigger token refresh if needed
+      try {
+        const youtubeService = require('../services/youtubeService');
+        await youtubeService.initialize();
+        jobLogger.info('YouTube service authentication validated');
+      } catch (error) {
+        jobLogger.error('YouTube authentication failed before batch processing', {
+          error: error.message,
+        });
+        throw error;
+      }
+
       let successCount = 0;
       let errorCount = 0;
 

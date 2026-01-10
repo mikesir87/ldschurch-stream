@@ -43,12 +43,13 @@ class YouTubeService {
 
         // Set up automatic token refresh
         this.oauth2Client.on('tokens', tokens => {
-          if (tokens.refresh_token) {
-            logger.info('YouTube refresh token updated');
-          }
-          if (tokens.access_token) {
-            logger.info('YouTube access token refreshed');
-          }
+          logger.info('YouTube token refresh completed', {
+            hasNewAccessToken: !!tokens.access_token,
+            hasNewRefreshToken: !!tokens.refresh_token,
+            accessTokenExpiry: tokens.expiry_date
+              ? new Date(tokens.expiry_date).toISOString()
+              : null,
+          });
         });
       }
 
@@ -85,6 +86,13 @@ class YouTubeService {
 
   async createLiveEvent(title, scheduledStartTime) {
     try {
+      logger.info('Creating YouTube Live event', {
+        title,
+        currentTokenExpiry: this.oauth2Client?.credentials?.expiry_date
+          ? new Date(this.oauth2Client.credentials.expiry_date).toISOString()
+          : 'unknown',
+      });
+
       const youtube = await this.getAuthenticatedYouTube();
 
       // Create the broadcast
