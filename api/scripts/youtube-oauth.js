@@ -14,8 +14,8 @@ const { google } = require('googleapis');
 const readline = require('readline');
 
 // You'll need to set these from your Google Cloud Console
-const CLIENT_ID = '635174505192-19l4dj7ervr7n34t9819nnnav6c9fs4o.apps.googleusercontent.com'; // process.env.YOUTUBE_CLIENT_ID;
-const CLIENT_SECRET = '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'; // process.env.YOUTUBE_CLIENT_SECRET;
+const CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
+const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
 const REDIRECT_URI = 'http://localhost'; // For installed applications
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
