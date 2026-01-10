@@ -90,6 +90,11 @@ const startServer = async () => {
   try {
     await connectDatabase();
 
+    // Run pending migrations
+    const { MigrationRunner } = require('./migrations');
+    const migrationRunner = new MigrationRunner();
+    await migrationRunner.runPending();
+
     // Seed development data if in development mode
     if (process.env.NODE_ENV === 'development') {
       const { seedDevelopmentData } = require('./utils/seed');
