@@ -2,6 +2,7 @@ const { google } = require('googleapis');
 const config = require('../config');
 const logger = require('../utils/logger');
 const { recordYouTubeRequest } = require('../utils/metrics');
+const YouTubeTokens = require('../models/YouTubeTokens');
 
 class YouTubeService {
   constructor() {
@@ -35,21 +36,28 @@ class YouTubeService {
         config.youtube.clientSecret
       );
 
-      if (config.youtube.accessToken && config.youtube.refreshToken) {
+      // Load tokens from database first, fallback to config
+      const dbTokens = await YouTubeTokens.findOne();
+      const accessToken = dbTokens?.accessToken || config.youtube.accessToken;
+      const refreshToken = dbTokens?.refreshToken || config.youtube.refreshToken;
+
+      if (accessToken && refreshToken) {
         logger.info('Setting YouTube credentials', {
-          hasAccessToken: !!config.youtube.accessToken,
-          hasRefreshToken: !!config.youtube.refreshToken,
-          accessTokenLength: config.youtube.accessToken?.length || 0,
-          refreshTokenLength: config.youtube.refreshToken?.length || 0,
+          source: dbTokens ? 'database' : 'config',
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          accessTokenLength: accessToken?.length || 0,
+          refreshTokenLength: refreshToken?.length || 0,
         });
 
         this.oauth2Client.setCredentials({
-          access_token: config.youtube.accessToken,
-          refresh_token: config.youtube.refreshToken,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expiry_date: dbTokens?.expiryDate?.getTime(),
         });
 
-        // Set up automatic token refresh
-        this.oauth2Client.on('tokens', tokens => {
+        // Set up automatic token refresh and database persistence
+        this.oauth2Client.on('tokens', async tokens => {
           logger.info('YouTube token refresh completed', {
             hasNewAccessToken: !!tokens.access_token,
             hasNewRefreshToken: !!tokens.refresh_token,
@@ -57,11 +65,29 @@ class YouTubeService {
               ? new Date(tokens.expiry_date).toISOString()
               : null,
           });
+
+          // Save updated tokens to database
+          try {
+            await YouTubeTokens.findOneAndUpdate(
+              {},
+              {
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token || refreshToken,
+                expiryDate: new Date(tokens.expiry_date),
+              },
+              { upsert: true }
+            );
+            logger.info('YouTube tokens saved to database');
+          } catch (error) {
+            logger.error('Failed to save YouTube tokens to database', {
+              error: error.message,
+            });
+          }
         });
       } else {
         logger.warn('YouTube tokens not configured', {
-          hasAccessToken: !!config.youtube.accessToken,
-          hasRefreshToken: !!config.youtube.refreshToken,
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
           hasClientId: !!config.youtube.clientId,
           hasClientSecret: !!config.youtube.clientSecret,
         });
