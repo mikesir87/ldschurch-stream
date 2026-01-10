@@ -6,10 +6,12 @@ on:
     paths:
       - 'dashboard/**'
       - 'k8s/dashboard-deployment.yaml'
+      - '.github/workflows/dashboard.yml'
   pull_request:
     branches: [main]
     paths:
       - 'dashboard/**'
+      - '.github/workflows/dashboard.yml'
 
 env:
   REGISTRY: docker.io

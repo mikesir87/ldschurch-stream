@@ -3,10 +3,15 @@ name: OBS Proxy Build and Deploy
 on:
   push:
     branches: [main]
-    paths: ['obs-proxy/**', 'k8s/obs-proxy-deployment.yaml']
+    paths:
+      - 'obs-proxy/**'
+      - 'k8s/obs-proxy-deployment.yaml'
+      - '.github/workflows/obs-proxy.yml'
   pull_request:
     branches: [main]
-    paths: ['obs-proxy/**']
+    paths:
+      - 'obs-proxy/**'
+      - '.github/workflows/obs-proxy.yml'
 
 jobs:
   build:

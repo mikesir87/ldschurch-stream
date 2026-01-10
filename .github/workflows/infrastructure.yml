@@ -6,6 +6,7 @@ on:
     paths:
       - 'k8s/**'
       - '!k8s/*-deployment.yaml' # Exclude individual deployment files
+      - '.github/workflows/infrastructure.yml'
 
 jobs:
   deploy:

@@ -6,10 +6,12 @@ on:
     paths:
       - 'api/**'
       - 'k8s/api-deployment.yaml'
+      - '.github/workflows/api.yml'
   pull_request:
     branches: [main]
     paths:
       - 'api/**'
+      - '.github/workflows/api.yml'
 
 env:
   REGISTRY: docker.io

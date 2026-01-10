@@ -6,10 +6,12 @@ on:
     paths:
       - 'access/**'
       - 'k8s/access-deployment.yaml'
+      - '.github/workflows/access.yml'
   pull_request:
     branches: [main]
     paths:
       - 'access/**'
+      - '.github/workflows/access.yml'
 
 env:
   REGISTRY: docker.io
