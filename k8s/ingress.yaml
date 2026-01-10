@@ -11,6 +11,7 @@ metadata:
 spec:
   tls:
     - hosts:
+        - ldschurch.stream
         - '*.ldschurch.stream'
       secretName: ldschurch-stream-tls
   rules:
