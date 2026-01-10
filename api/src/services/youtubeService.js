@@ -36,6 +36,13 @@ class YouTubeService {
       );
 
       if (config.youtube.accessToken && config.youtube.refreshToken) {
+        logger.info('Setting YouTube credentials', {
+          hasAccessToken: !!config.youtube.accessToken,
+          hasRefreshToken: !!config.youtube.refreshToken,
+          accessTokenLength: config.youtube.accessToken?.length || 0,
+          refreshTokenLength: config.youtube.refreshToken?.length || 0,
+        });
+
         this.oauth2Client.setCredentials({
           access_token: config.youtube.accessToken,
           refresh_token: config.youtube.refreshToken,
@@ -50,6 +57,13 @@ class YouTubeService {
               ? new Date(tokens.expiry_date).toISOString()
               : null,
           });
+        });
+      } else {
+        logger.warn('YouTube tokens not configured', {
+          hasAccessToken: !!config.youtube.accessToken,
+          hasRefreshToken: !!config.youtube.refreshToken,
+          hasClientId: !!config.youtube.clientId,
+          hasClientSecret: !!config.youtube.clientSecret,
         });
       }
 
