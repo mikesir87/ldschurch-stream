@@ -22,7 +22,7 @@ Additionally, there is a _global admin_ role that is able to see and manage all 
 
 ## The system components
 
-The application is composed of three user-facing components - the landing page, stream dashboard, and stream access - and a backing REST API.
+The application is composed of four user-facing components - the landing page, stream dashboard, stream access, and OBS proxy - and a backing REST API.
 
 ### Landing page
 
@@ -45,7 +45,7 @@ The stream dashboard is only used by the _stream specialists_. Upon opening the 
 
 The stream dashboard also provides the ability to see attendance over time using trend graphs and tables. The reporting provides the ability to search for a specific name and see what week(s) they might have attended. The purpose of this is to help identify those that might need to ministered to (in case they haven't visited in-person for a while).
 
-As of right now, this dashboard is not managing any aspects of the stream itself (connecting OBS, managing scenes, etc.).
+The dashboard includes an integrated "Go Live" feature that generates secure access codes for remote OBS control. When a stream specialist clicks "Go Live", the system creates temporary access codes that allow the laptop running OBS to connect to a proxy service, while providing a separate controller interface accessible via phone. This enables the specialist to control OBS scenes remotely while sitting with their family during the service.
 
 The _stream specialists_ can enter email addresses for _local leadership_, who will be automatically sent emails on Monday morning containing a report of the individuals that attended the streams.
 
@@ -60,6 +60,25 @@ On weeks that have no stream (maybe due to stake or general conferences), the ap
 No authentication is required for this site, as it is open to the public.
 
 An example domain might be https://blacksburg-va.ldschurch.stream, which will provide the form for the Blacksburg, VA ward.
+
+### OBS Proxy
+
+The OBS proxy service enables remote control of OBS Studio during live streams. This addresses the challenge that church WiFi networks typically block direct client-to-client communication, preventing stream specialists from controlling OBS remotely.
+
+The proxy works by creating a three-way WebSocket connection:
+
+1. **Laptop** (running OBS) connects to the proxy service
+2. **Phone** (controller) connects to the proxy service
+3. **Proxy** forwards WebSocket messages between laptop and phone
+
+When a stream specialist clicks "Go Live" in the dashboard, the system generates a secure 8-character access code that expires in 8 hours. This provides:
+
+- **Laptop URL**: Opens the proxy connection to local OBS WebSocket
+- **Controller URL**: Opens the remote control interface on phone
+
+This enables the specialist to sit with their family during the service while controlling OBS scenes, switching cameras, and managing the stream remotely through their phone.
+
+The service is available at https://obs-proxy.ldschurch.stream and includes authentication, metrics monitoring, and automatic cleanup of expired access codes.
 
 ### REST API
 

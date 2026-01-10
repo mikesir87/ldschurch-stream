@@ -11,6 +11,7 @@ import Container from 'react-bootstrap/Container';
 import { useStream } from '../context/StreamContext';
 import { useUnit } from '../context/UnitContext';
 import { useConfig } from '../context/ConfigContext';
+import GoLiveModal from '../components/GoLiveModal';
 
 const Dashboard = () => {
   const { streams, loading, error, createStream, deleteStream } = useStream();
@@ -22,7 +23,6 @@ const Dashboard = () => {
   const [selectedStream, setSelectedStream] = useState(null);
   const [streamToDelete, setStreamToDelete] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [streamKeyCopySuccess, setStreamKeyCopySuccess] = useState(false);
   const [formData, setFormData] = useState({
     scheduledDate: '',
     scheduledTime: '10:00 AM',
@@ -102,29 +102,6 @@ const Dashboard = () => {
         document.execCommand('copy');
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-      } catch (fallbackErr) {
-        console.error('Fallback copy failed:', fallbackErr);
-      }
-      document.body.removeChild(textArea);
-    }
-  };
-
-  const copyStreamKey = async streamKey => {
-    try {
-      await navigator.clipboard.writeText(streamKey);
-      setStreamKeyCopySuccess(true);
-      setTimeout(() => setStreamKeyCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy stream key:', err);
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = streamKey;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        setStreamKeyCopySuccess(true);
-        setTimeout(() => setStreamKeyCopySuccess(false), 2000);
       } catch (fallbackErr) {
         console.error('Fallback copy failed:', fallbackErr);
       }
@@ -481,90 +458,11 @@ const Dashboard = () => {
       </Modal>
 
       {/* Go Live Modal */}
-      <Modal show={showGoLiveModal} onHide={() => setShowGoLiveModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-broadcast me-2"></i>
-            Go Live Instructions
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedStream && (
-            <>
-              <Alert variant="info" className="mb-4">
-                <Alert.Heading>Stream Key</Alert.Heading>
-                <div className="d-flex align-items-center gap-2 mt-2">
-                  <code className="flex-grow-1 p-2 bg-light border rounded">
-                    {selectedStream.streamKey}
-                  </code>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => copyStreamKey(selectedStream.streamKey)}
-                    className="d-flex align-items-center gap-1"
-                  >
-                    <i className={streamKeyCopySuccess ? 'bi bi-check' : 'bi bi-clipboard'}></i>
-                    {streamKeyCopySuccess ? 'Copied!' : 'Copy'}
-                  </Button>
-                </div>
-              </Alert>
-
-              <h5>OBS Setup Instructions</h5>
-              <ol className="mb-4">
-                <li className="mb-2">
-                  <strong>Open OBS Studio</strong> and ensure your scenes are configured
-                </li>
-                <li className="mb-2">
-                  <strong>Go to Settings → Stream</strong>
-                  <ul className="mt-1">
-                    <li>Service: YouTube - RTMPS</li>
-                    <li>Server: Primary YouTube ingest server</li>
-                    <li>Stream Key: Use the key above</li>
-                  </ul>
-                </li>
-                <li className="mb-2">
-                  <strong>Click "Start Streaming"</strong> in OBS when ready to go live
-                </li>
-                <li className="mb-2">
-                  <strong>Monitor the stream</strong> using the "View Stream" button in the
-                  dashboard
-                </li>
-                <li className="mb-2">
-                  <strong>Remember:</strong> Pause the stream during sacrament administration
-                </li>
-              </ol>
-
-              <Alert variant="warning">
-                <strong>Important Reminders:</strong>
-                <ul className="mb-0 mt-2">
-                  <li>Test your audio and video before going live</li>
-                  <li>
-                    The stream will go live immediately when you click "Start Streaming" in OBS
-                  </li>
-                  <li>The stream will automatically stop after the scheduled time</li>
-                  <li>Recordings will be automatically deleted within 24 hours</li>
-                </ul>
-              </Alert>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowGoLiveModal(false)}>
-            Close
-          </Button>
-          {selectedStream?.youtubeStreamUrl && (
-            <Button
-              variant="primary"
-              href={selectedStream.youtubeStreamUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              as="a"
-            >
-              View Stream Page
-            </Button>
-          )}
-        </Modal.Footer>
-      </Modal>
+      <GoLiveModal
+        show={showGoLiveModal}
+        onHide={() => setShowGoLiveModal(false)}
+        stream={selectedStream}
+      />
     </div>
   );
 };

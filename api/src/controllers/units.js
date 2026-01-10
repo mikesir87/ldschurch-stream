@@ -2,10 +2,12 @@ const StreamEvent = require('../models/StreamEvent');
 const AttendanceRecord = require('../models/AttendanceRecord');
 const Unit = require('../models/Unit');
 const User = require('../models/User');
+const ObsAccessCode = require('../models/ObsAccessCode');
 const { AppError } = require('../middleware/errorHandler');
 const youtubeService = require('../services/youtubeService');
 const { recordStreamCreation } = require('../utils/metrics');
 const logger = require('../utils/logger');
+const crypto = require('crypto');
 
 const getUserUnits = async (req, res, next) => {
   try {
@@ -292,6 +294,65 @@ const updateUnitSettings = async (req, res, next) => {
   }
 };
 
+const createObsAccess = async (req, res, next) => {
+  try {
+    const { unitId, streamId } = req.params;
+
+    // Verify stream exists and belongs to unit
+    const stream = await StreamEvent.findOne({ _id: streamId, unitId });
+    if (!stream) {
+      throw new AppError('Stream not found', 404);
+    }
+
+    // Generate access code
+    const accessCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // Create access code record (expires in 8 hours)
+    const obsAccess = await ObsAccessCode.create({
+      accessCode,
+      unitId,
+      streamEventId: streamId,
+      createdBy: req.user.id,
+      expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
+    });
+
+    req.logger.info('OBS access code created', {
+      accessCode,
+      streamId,
+      unitId,
+    });
+
+    res.json({
+      accessCode,
+      expiresAt: obsAccess.expiresAt,
+      laptopUrl: `${process.env.OBS_PROXY_URL || 'http://obs-proxy.traefik.me'}/${accessCode}`,
+      controllerUrl: `${process.env.OBS_PROXY_URL || 'http://obs-proxy.traefik.me'}/${accessCode}-controller`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const revokeObsAccess = async (req, res, next) => {
+  try {
+    const { unitId, streamId } = req.params;
+
+    await ObsAccessCode.updateMany(
+      { unitId, streamEventId: streamId, isActive: true },
+      { isActive: false }
+    );
+
+    req.logger.info('OBS access codes revoked', {
+      streamId,
+      unitId,
+    });
+
+    res.json({ message: 'Access codes revoked' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUserUnits,
   getStreams,
@@ -302,4 +363,6 @@ module.exports = {
   getAttendanceTrends,
   getUnitSettings,
   updateUnitSettings,
+  createObsAccess,
+  revokeObsAccess,
 };

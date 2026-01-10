@@ -14,5 +14,15 @@ router.get('/:unitId/attendance', authorizeUnit, unitsController.getAttendance);
 router.get('/:unitId/attendance/trends', authorizeUnit, unitsController.getAttendanceTrends);
 router.get('/:unitId/settings', authorizeUnit, unitsController.getUnitSettings);
 router.put('/:unitId/settings', authorizeUnit, unitsController.updateUnitSettings);
+router.post(
+  '/:unitId/streams/:streamId/obs-access',
+  authorizeUnit,
+  unitsController.createObsAccess
+);
+router.delete(
+  '/:unitId/streams/:streamId/obs-access',
+  authorizeUnit,
+  unitsController.revokeObsAccess
+);
 
 module.exports = router;

@@ -40,6 +40,7 @@ mikesir87/ldschurch-stream-api:20250101-120000
 mikesir87/ldschurch-stream-dashboard:20250101-120000
 mikesir87/ldschurch-stream-access:20250101-120000
 mikesir87/ldschurch-stream-landing:20250101-120000
+mikesir87/ldschurch-stream-obs-proxy:20250101-120000
 
 # Multi-architecture builds
 - linux/amd64 (production)
@@ -58,6 +59,7 @@ Each component has its own workflow that only triggers when its code changes:
 - **`.github/workflows/dashboard.yml`** - Builds/deploys when `dashboard/**` changes
 - **`.github/workflows/access.yml`** - Builds/deploys when `access/**` changes
 - **`.github/workflows/landing.yml`** - Builds/deploys when `landing/**` changes
+- **`.github/workflows/obs-proxy.yml`** - Builds/deploys when `obs-proxy/**` changes
 
 #### Shared Workflows
 
@@ -350,7 +352,6 @@ spec:
 {
   _id: ObjectId,
   token: String, // UUID
-  email: String, // invited email address
   unitId: ObjectId,
   createdBy: ObjectId, // global admin user
   expiresAt: Date,
@@ -360,8 +361,21 @@ spec:
 }
 ```
 
-updatedAt: Date
+### OBS Access Code
+
+```javascript
+{
+  _id: ObjectId,
+  accessCode: String, // 8-character hex code
+  unitId: ObjectId,
+  streamEventId: ObjectId,
+  createdBy: ObjectId, // user who created the code
+  expiresAt: Date, // 8 hours from creation
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
 }
+```
 
 ````
 
@@ -420,6 +434,8 @@ updatedAt: Date
 - `PUT /api/units/:unitId/streams/:streamId` - Update stream event
 - `DELETE /api/units/:unitId/streams/:streamId` - Cancel stream event
 - `GET /api/units/:unitId/stream-key` - Get current stream key
+- `POST /api/units/:unitId/streams/:streamId/obs-access` - Generate OBS access code
+- `DELETE /api/units/:unitId/streams/:streamId/obs-access` - Revoke OBS access codes
 
 ### Unit Configuration (Specialists)
 
@@ -436,6 +452,10 @@ updatedAt: Date
 
 - `GET /api/public/:subdomain/current-stream` - Get current/next stream info
 - `POST /api/public/:subdomain/attend` - Submit attendance form
+
+### OBS Proxy Integration
+
+- `GET /api/obs-proxy/validate/:accessCode` - Validate OBS access codes
 
 ## Authentication & Authorization
 

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obs-proxy-deployment
+  namespace: ldschurch-stream
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: obs-proxy
+  template:
+    metadata:
+      labels:
+        app: obs-proxy
+    spec:
+      containers:
+        - name: obs-proxy
+          image: mikesir87/ldschurch-stream-obs-proxy:latest
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 9090
+              name: metrics
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3000'
+            - name: API_URL
+              value: 'https://api.ldschurch.stream'
+            - name: OBS_PROXY_URL
+              value: 'https://obs-proxy.ldschurch.stream'
+          resources:
+            requests:
+              memory: '64Mi'
+              cpu: '50m'
+            limits:
+              memory: '128Mi'
+              cpu: '100m'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: obs-proxy-service
+  namespace: ldschurch-stream
+spec:
+  selector:
+    app: obs-proxy
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      name: http

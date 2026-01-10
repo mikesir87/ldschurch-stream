@@ -8,6 +8,7 @@ ldschurch-stream/
 ├── dashboard/                    # Stream specialist dashboard (React)
 ├── access/                       # Stream attendee access app (React)
 ├── landing/                      # Marketing/landing page (React)
+├── obs-proxy/                    # OBS WebSocket proxy service (Node.js)
 ├── youtube-mock/                 # YouTube API mock server for development
 ├── sendgrid-mock/                # SendGrid API mock server for development
 ├── k8s/                         # Kubernetes deployment manifests
@@ -170,7 +171,42 @@ landing/
 └── .env.example              # Environment template
 ```
 
-### YouTube Mock Server Structure
+### OBS Proxy Structure
+
+The `obs-proxy/` service provides WebSocket proxy functionality for remote OBS control:
+
+```
+obs-proxy/
+├── src/
+│   ├── server.js              # Express server with WebSocket handling
+│   ├── websocketPair.js       # WebSocket proxy logic
+│   ├── auth.js                # Access code validation
+│   ├── metrics.js             # OpenTelemetry metrics
+│   ├── instrumentation.js     # OpenTelemetry setup
+│   └── public/
+│       └── script.js          # Client-side controller interface
+├── Dockerfile                 # Container build
+├── package.json               # Dependencies
+└── .eslintrc.json            # ESLint configuration
+```
+
+#### OBS Proxy Architecture
+
+```javascript
+// Three-way WebSocket connection
+Laptop (OBS) ↔ Proxy Service ↔ Phone (Controller)
+
+// Access code workflow
+Dashboard → Generate 8-char code → Laptop URL + Controller URL
+```
+
+#### Key Features
+
+- **Secure access codes** - 8-hour expiration, validated against API
+- **WebSocket forwarding** - Bidirectional message passing between laptop and phone
+- **Metrics monitoring** - OpenTelemetry integration with Prometheus
+- **Authentication** - Access codes validated before connection
+- **Auto-cleanup** - Expired codes automatically removed
 
 The `youtube-mock/` service provides a development-only mock of the YouTube Data API v3:
 

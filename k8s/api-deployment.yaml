@@ -47,6 +47,8 @@ spec:
               value: '/run/secrets/app/youtube_client_id'
             - name: YOUTUBE_CLIENT_SECRET_FILE
               value: '/run/secrets/app/youtube_client_secret'
+            - name: OBS_PROXY_URL
+              value: 'https://obs-proxy.ldschurch.stream'
           volumeMounts:
             - name: secrets
               mountPath: /run/secrets/app

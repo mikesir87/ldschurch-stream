@@ -22,6 +22,7 @@ A tool to help congregations of The Church of Jesus Christ of Latter-Day Saints 
    - API Documentation: http://api.traefik.me/api/docs
    - Database Admin: http://db.traefik.me
    - Email Testing: http://mail.traefik.me
+   - OBS Proxy: http://obs-proxy.traefik.me
    - Stream Access: http://blacksburg-va.traefik.me (example)
 
 ### Production Deployment
@@ -42,6 +43,7 @@ kubectl apply -f k8s/
 ## Key Features
 
 - YouTube Live stream management
+- Remote OBS control via WebSocket proxy
 - Automated attendance reporting
 - Subdomain-based unit access
 - Weekly email reports to leadership

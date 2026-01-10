@@ -78,6 +78,25 @@ services:
         - action: rebuild
           path: ./youtube-mock/package.json
 
+  obs-proxy:
+    build:
+      context: ./obs-proxy
+      target: dev
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.obs-proxy.rule=Host(`obs-proxy.traefik.me`)'
+      - 'traefik.http.services.obs-proxy.loadbalancer.server.port=3000'
+    environment:
+      - API_URL=http://api:3000
+    develop:
+      watch:
+        - action: sync
+          path: ./obs-proxy/src
+          target: /app/src
+          initial_sync: true
+        - action: rebuild
+          path: ./obs-proxy/package.json
+
   api:
     build:
       context: ./api
@@ -95,6 +114,7 @@ services:
       - REPORT_CRON_SCHEDULE=0 6 * * 1
       - TIMEZONE=America/New_York
       - YOUTUBE_BATCH_SCHEDULE=*/10 * * * * *
+      - OBS_PROXY_URL=http://obs-proxy.traefik.me
     ports:
       - '9090:9090' # Prometheus metrics
     labels:
