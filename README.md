@@ -64,7 +64,6 @@ graph TB
     %% Mock Services (Development)
     YTM[YouTube Mock]
     SGM[SendGrid Mock]
-    MH[MailHog]
 
     %% User Interactions
     USERS[Stream Attendees] --> TR
@@ -86,7 +85,6 @@ graph TB
     %% Development Mocks
     API -.-> YTM
     API -.-> SGM
-    API -.-> MH
 
     %% WebSocket Connections
     OBS -.-> DASH
@@ -102,7 +100,7 @@ graph TB
     class API,OBS backend
     class DB data
     class YT,SG external
-    class YTM,SGM,MH mock
+    class YTM,SGM mock
 ```
 
 ## Key Features

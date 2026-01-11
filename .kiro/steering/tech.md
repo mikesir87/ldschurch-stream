@@ -1005,11 +1005,7 @@ YOUTUBE_CLIENT_SECRET_FILE=/run/secrets/youtube_client_secret
 YOUTUBE_CHANNEL_ID=your-channel-id
 
 # Email Configuration
-SMTP_HOST=mailhog
-SMTP_PORT=1025
-SMTP_SECURE=false
-SMTP_USER_FILE=/run/secrets/smtp_user
-SMTP_PASS_FILE=/run/secrets/smtp_pass
+SENDGRID_API_KEY_FILE=/run/secrets/sendgrid_api_key
 FROM_EMAIL=noreply@ldschurch.stream
 
 # Application Settings
@@ -1067,12 +1063,12 @@ services:
     labels:
       - 'traefik.enable=false'
 
-  mailhog:
-    image: mailhog/mailhog
+  sendgrid-mock:
+    build: ./sendgrid-mock
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
-      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+      - 'traefik.http.routers.sendgrid-mock.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.sendgrid-mock.loadbalancer.server.port=3002'
 
   youtube-mock:
     build: ./youtube-mock
@@ -1097,8 +1093,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream?authSource=admin
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
+      - SENDGRID_API_KEY=mock-api-key
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
       - YOUTUBE_CLIENT_ID=placeholder-client-id
       - YOUTUBE_CLIENT_SECRET=placeholder-client-secret
@@ -1111,7 +1106,7 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-      mailhog:
+      sendgrid-mock:
         condition: service_started
       youtube-mock:
         condition: service_started
@@ -1347,12 +1342,12 @@ services:
       mongodb:
         condition: service_healthy
 
-  mailhog:
-    image: mailhog/mailhog
+  sendgrid-mock:
+    build: ./sendgrid-mock
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.mailhog.rule=Host(`mail.traefik.me`)'
-      - 'traefik.http.services.mailhog.loadbalancer.server.port=8025'
+      - 'traefik.http.routers.sendgrid-mock.rule=Host(`mail.traefik.me`)'
+      - 'traefik.http.services.sendgrid-mock.loadbalancer.server.port=3002'
 
   youtube-mock:
     build: ./youtube-mock
@@ -1376,8 +1371,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
+      - SENDGRID_API_KEY=mock-api-key
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.api.rule=Host(`api.traefik.me`)'

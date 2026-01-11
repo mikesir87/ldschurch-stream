@@ -1523,13 +1523,13 @@ class TestEnvironment {
 
     this.containers.set('mongodb', mongoContainer);
 
-    // MailHog container for email testing
-    const mailhogContainer = await new GenericContainer('mailhog/mailhog')
-      .withExposedPorts(1025, 8025)
-      .withWaitStrategy(Wait.forHttp('/api/v2/messages', 8025))
+    // SendGrid Mock container for email testing
+    const sendgridMockContainer = await new GenericContainer('sendgrid-mock')
+      .withExposedPorts(3002)
+      .withWaitStrategy(Wait.forHttp('/health', 3002))
       .start();
 
-    this.containers.set('mailhog', mailhogContainer);
+    this.containers.set('sendgrid-mock', sendgridMockContainer);
 
     // Connect to test database
     const mongoUrl = `mongodb://testuser:testpass@${mongoContainer.getHost()}:${mongoContainer.getMappedPort(27017)}/testdb`;
@@ -1537,9 +1537,7 @@ class TestEnvironment {
 
     return {
       mongoUrl,
-      smtpHost: mailhogContainer.getHost(),
-      smtpPort: mailhogContainer.getMappedPort(1025),
-      mailhogApi: `http://${mailhogContainer.getHost()}:${mailhogContainer.getMappedPort(8025)}`,
+      sendgridMockApi: `http://${sendgridMockContainer.getHost()}:${sendgridMockContainer.getMappedPort(3002)}`,
     };
   }
 
@@ -3196,8 +3194,8 @@ services:
     depends_on:
       - mongodb
 
-  mailhog:
-    image: mailhog/mailhog
+  sendgrid-mock:
+    build: ./sendgrid-mock
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.sendgrid-mock.rule=Host(`mail.traefik.me`)'
@@ -3210,8 +3208,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream
-      - SMTP_HOST=mailhog
-      - SMTP_PORT=1025
+      - SENDGRID_API_KEY=mock-api-key
       - CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
     labels:
       - 'traefik.enable=true'
@@ -3219,7 +3216,7 @@ services:
       - 'traefik.http.services.api.loadbalancer.server.port=3000'
     depends_on:
       - mongodb
-      - mailhog
+      - sendgrid-mock
     develop:
       watch:
         - action: sync
@@ -3386,8 +3383,7 @@ PORT=3000
 MONGODB_URL=mongodb://admin:password@mongodb:27017/ldschurch-stream
 JWT_SECRET_FILE=/run/secrets/jwt_secret
 YOUTUBE_API_KEY_FILE=/run/secrets/youtube_api_key
-SMTP_HOST=mailhog
-SMTP_PORT=1025
+SENDGRID_API_KEY=mock-api-key
 FROM_EMAIL=noreply@ldschurch.stream
 CORS_ORIGINS=http://dashboard.traefik.me,http://api.traefik.me
 ```

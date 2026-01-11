@@ -57,7 +57,7 @@ async function setupTestData() {
     // eslint-disable-next-line no-console
     console.log('Now trigger the report generation from the admin panel.');
     // eslint-disable-next-line no-console
-    console.log('Check MailHog at http://mail.traefik.me for the email.');
+    console.log('Check SendGrid Mock at http://mail.traefik.me for the email.');
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error setting up test data:', error);
