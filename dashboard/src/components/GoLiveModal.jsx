@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
@@ -10,6 +11,7 @@ import { useConfig } from '../context/ConfigContext';
 const GoLiveModal = ({ show, onHide, stream }) => {
   const { selectedUnit } = useUnit();
   const { config } = useConfig();
+  const navigate = useNavigate();
   const [obsAccess, setObsAccess] = useState(null);
   const [obsAccessLoading, setObsAccessLoading] = useState(false);
   const [streamKeyCopySuccess, setStreamKeyCopySuccess] = useState(false);
@@ -133,15 +135,15 @@ const GoLiveModal = ({ show, onHide, stream }) => {
               <div className="mb-4">
                 <h5>Step 2: Remote Control Setup</h5>
                 <div className="d-flex align-items-center gap-2 mb-2">
-                  <code className="flex-grow-1 p-2 bg-light border rounded small">
-                    {obsAccess.laptopUrl}
+                  <code className="flex-grow-1 p-2 bg-light border rounded">
+                    Access Code: {obsAccess.accessCode}
                   </code>
                   <Button
-                    variant="outline-primary"
+                    variant="primary"
                     size="sm"
-                    onClick={() => window.open(obsAccess.laptopUrl, '_blank')}
+                    onClick={() => navigate(`/obs/${obsAccess.accessCode}`)}
                   >
-                    Open
+                    Open Controller
                   </Button>
                 </div>
                 <small className="text-muted">

@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
 import UnitSettings from './pages/UnitSettings';
 import Admin from './pages/Admin';
+import ObsController from './pages/ObsController';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import KonamiCode from './components/KonamiCode';
@@ -42,6 +43,7 @@ function AppContent() {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/reports" element={<Reports />} />
                         <Route path="/settings" element={<UnitSettings />} />
+                        <Route path="/obs/:accessCode" element={<ObsController />} />
                         {user.role === 'global_admin' && (
                           <Route path="/admin" element={<Admin />} />
                         )}

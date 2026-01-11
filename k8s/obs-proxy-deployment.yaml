@@ -30,6 +30,8 @@ spec:
               value: 'https://api.ldschurch.stream'
             - name: OBS_PROXY_URL
               value: 'https://obs-proxy.ldschurch.stream'
+            - name: CORS_ORIGINS
+              value: 'https://dashboard.ldschurch.stream'
           resources:
             requests:
               memory: '64Mi'

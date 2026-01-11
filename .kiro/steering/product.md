@@ -45,7 +45,7 @@ The stream dashboard is only used by the _stream specialists_. Upon opening the 
 
 The stream dashboard also provides the ability to see attendance over time using trend graphs and tables. The reporting provides the ability to search for a specific name and see what week(s) they might have attended. The purpose of this is to help identify those that might need to ministered to (in case they haven't visited in-person for a while).
 
-The dashboard includes an integrated "Go Live" feature that generates secure access codes for remote OBS control. When a stream specialist clicks "Go Live", the system creates temporary access codes that allow the laptop running OBS to connect to a proxy service, while providing a separate controller interface accessible via phone. This enables the specialist to control OBS scenes remotely while sitting with their family during the service.
+The dashboard includes an integrated "Go Live" feature that generates secure access codes for remote OBS control. When a stream specialist clicks "Go Live", the system creates temporary access codes that allow the laptop running OBS to connect to a proxy service, while providing the controller interface directly within the dashboard. This enables the specialist to control OBS scenes remotely while sitting with their family during the service.
 
 The _stream specialists_ can enter email addresses for _local leadership_, who will be automatically sent emails on Monday morning containing a report of the individuals that attended the streams.
 
@@ -71,14 +71,11 @@ The proxy works by creating a three-way WebSocket connection:
 2. **Phone** (controller) connects to the proxy service
 3. **Proxy** forwards WebSocket messages between laptop and phone
 
-When a stream specialist clicks "Go Live" in the dashboard, the system generates a secure 8-character access code that expires in 8 hours. This provides:
+When a stream specialist clicks "Go Live" in the dashboard, the system generates a secure 8-character access code that expires in 8 hours. The specialist can then click "Open Controller" to access the OBS remote control interface directly within the dashboard at `/obs/:accessCode`.
 
-- **Laptop URL**: Opens the proxy connection to local OBS WebSocket
-- **Controller URL**: Opens the remote control interface on phone
+This enables the specialist to sit with their family during the service while controlling OBS scenes, switching cameras, and managing the stream remotely through the integrated dashboard interface.
 
-This enables the specialist to sit with their family during the service while controlling OBS scenes, switching cameras, and managing the stream remotely through their phone.
-
-The service is available at https://obs-proxy.ldschurch.stream and includes authentication, metrics monitoring, and automatic cleanup of expired access codes.
+The service operates as a pure WebSocket proxy with no frontend, providing only the message forwarding functionality and access code validation endpoints for the dashboard.
 
 ### REST API
 

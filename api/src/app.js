@@ -53,7 +53,10 @@ const limiter = rateLimit({
       message: 'Too many requests, please try again later',
     },
   },
-  skip: req => req.url === '/health' || req.url === '/api/health',
+  skip: req =>
+    req.url === '/health' ||
+    req.url === '/api/health' ||
+    req.url.startsWith('/api/obs-proxy/validate'),
 });
 app.use(limiter);
 

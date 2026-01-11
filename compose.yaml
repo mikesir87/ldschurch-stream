@@ -88,6 +88,7 @@ services:
       - 'traefik.http.services.obs-proxy.loadbalancer.server.port=3000'
     environment:
       - API_URL=http://api:3000
+      - CORS_ORIGINS=http://dashboard.traefik.me
     develop:
       watch:
         - action: sync

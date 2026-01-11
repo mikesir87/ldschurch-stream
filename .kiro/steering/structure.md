@@ -182,9 +182,7 @@ obs-proxy/
 │   ├── websocketPair.js       # WebSocket proxy logic
 │   ├── auth.js                # Access code validation
 │   ├── metrics.js             # OpenTelemetry metrics
-│   ├── instrumentation.js     # OpenTelemetry setup
-│   └── public/
-│       └── script.js          # Client-side controller interface
+│   └── instrumentation.js     # OpenTelemetry setup
 ├── Dockerfile                 # Container build
 ├── package.json               # Dependencies
 └── .eslintrc.json            # ESLint configuration
@@ -197,13 +195,16 @@ obs-proxy/
 Laptop (OBS) ↔ Proxy Service ↔ Phone (Controller)
 
 // Access code workflow
-Dashboard → Generate 8-char code → Laptop URL + Controller URL
+Dashboard → Generate 8-char code → Dashboard Controller Interface
 ```
 
 #### Key Features
 
+- **Pure WebSocket Proxy** - No frontend, only handles message forwarding
 - **Secure access codes** - 8-hour expiration, validated against API
 - **WebSocket forwarding** - Bidirectional message passing between laptop and phone
+- **Dashboard Integration** - Controller interface served at `/obs/:accessCode` route
+- **CORS Support** - Configured for cross-origin requests from dashboard
 - **Metrics monitoring** - OpenTelemetry integration with Prometheus
 - **Authentication** - Access codes validated before connection
 - **Auto-cleanup** - Expired codes automatically removed

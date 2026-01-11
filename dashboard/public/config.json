@@ -1,4 +1,5 @@
 {
   "apiUrl": "http://api.traefik.me",
+  "obsProxyUrl": "http://obs-proxy.traefik.me",
   "appName": "LDSChurch.Stream Dashboard"
 }
